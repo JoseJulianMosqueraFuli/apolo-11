@@ -1,0 +1,39 @@
+general:
+  num_files_initial: 1
+  num_files_final: 100
+  time_cycle: 20
+
+missions:
+  codes:
+    OrbitOne: ORBONE
+    ColonyMoon: CLNM
+    VacMars: TMRS
+    GalaxyTwo: GALXONE
+  names:
+    - OrbitOne
+    - ColonyMoon
+    - VacMars
+    - GalaxyTwo
+    - Moon'sBallon
+devices:
+  status:
+    - excellent
+    - good
+    - warning
+    - faulty
+    - killed
+    - unknown
+
+  types:
+    - Satellite
+    - Spaceship
+    - SpaceSuit
+    - Rover
+    - Equipment
+
+date_format: "%d%m%y%H%M%S"
+
+routes:
+  - devices: nasa_apolo_11/data/devices/
+  - backups: nasa_apolo_11/data/backups/
+  - reports: nasa_apolo_11/data/reports/
