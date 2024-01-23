@@ -42,6 +42,14 @@ nasa-apollo-11/
 
 ### Installation with Poetry
 
+```bash
+poetry install
+```
+
+```bash
+poetry shell
+```
+
 ## License
 
 This project is licensed under the MIT License.
