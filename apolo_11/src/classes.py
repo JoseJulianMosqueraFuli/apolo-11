@@ -5,8 +5,8 @@ config = ConfigManager.read_yaml_config(config_path)
 
 class Mission:
     def __init__(self):
-        self._name = config['mission']['names']
-        self._codes = config['mission']['codes']
+        self._name = config['missions']['names']
+        self._codes = config['missions']['codes']
         
     @property
     def codes(self):
