@@ -34,6 +34,6 @@ devices:
 date_format: "%d%m%y%H%M%S"
 
 routes:
-  - devices: nasa_apolo_11/data/devices/
-  - backups: nasa_apolo_11/data/backups/
-  - reports: nasa_apolo_11/data/reports/
+  - devices: /results/devices/
+  - backups: /results/backups/
+  - reports: /results/reports/
