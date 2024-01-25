@@ -22,7 +22,7 @@ class Reporter:
             os.makedirs(folder_path, exist_ok=True)
 
 
-    def process_files(self, input_directory: str, backup_directory: str, time_cycle: int = 20):
+    def process_files(self, input_directory: str, backup_directory: str):
         try:
             self.generate_report_folder()
 
