@@ -9,3 +9,5 @@ __pycache__/
 
 # Folders configuration files
 .idea/
+
+apolo_11/src/cycle_number.txt
