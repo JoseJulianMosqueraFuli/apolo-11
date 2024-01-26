@@ -1,0 +1,30 @@
+Análisis de eventos:
+Misión: OrbitOne, Tipo de Dispositivo: Rover
+   Estado: excellent, Cantidad: 1
+Misión: ColonyMoon, Tipo de Dispositivo: SpaceSuit
+   Estado: good, Cantidad: 1
+   Estado: killed, Cantidad: 1
+   Estado: unknown, Cantidad: 1
+Misión: GalaxyTwo, Tipo de Dispositivo: Equipment
+   Estado: excellent, Cantidad: 1
+Misión: Moon'sBallon, Tipo de Dispositivo: unknown
+   Estado: unknown, Cantidad: 1
+
+Gestión de desconexiones:
+Misión: OrbitOne, Tipo de Dispositivo: Rover
+   Desconexiones (unknown): 0
+Misión: ColonyMoon, Tipo de Dispositivo: SpaceSuit
+   Desconexiones (unknown): 1
+Misión: GalaxyTwo, Tipo de Dispositivo: Equipment
+   Desconexiones (unknown): 0
+Misión: Moon'sBallon, Tipo de Dispositivo: unknown
+   Desconexiones (unknown): 1
+
+Consolidación de misiones:
+Total de dispositivos inoperables: 2
+
+Cálculo de porcentajes:
+Misión: OrbitOne, Tipo de Dispositivo: Rover, Porcentaje: 100.00%
+Misión: ColonyMoon, Tipo de Dispositivo: SpaceSuit, Porcentaje: 66.67%
+Misión: GalaxyTwo, Tipo de Dispositivo: Equipment, Porcentaje: 100.00%
+Misión: Moon'sBallon, Tipo de Dispositivo: unknown, Porcentaje: 0.00%
