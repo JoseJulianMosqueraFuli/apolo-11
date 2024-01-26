@@ -15,17 +15,30 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 class Reporter:
+    """
+    Generate reports based on log files
+    
+    Attributes:
+        devices_reports (defaultdict): List to store reports categorized 
+        by mission and device type.    
+    """
     def __init__(self):
         self.devices_reports = defaultdict(list)
         
     def generate_report_folder(self, base_path='./apolo_11/results') -> None:
+        """
+        Generate folders for storing backup and report files     
+            
+        """
         folders: list = ['backups', 'reports']
         for folder in folders:
             folder_path = os.path.join(base_path, folder)
             os.makedirs(folder_path, exist_ok=True)
 
-
     def process_files(self, input_directory: str, backup_directory: str):
+        """
+        Process log files, generate reports, and move folders to backup
+        """
         try:
             self.generate_report_folder()
 
@@ -47,6 +60,13 @@ class Reporter:
             logger.error(f"Algunos archivos serán procesados en la siguiente versión del reporte.")
                          
     def move_folders_to_backup(self, source_directory="./apolo_11/results/devices", backup_directory="./apolo_11/results/backups"):
+        """
+        Move folders with noreport to backup directory
+        
+        source_directory: Source directory containing folders to be moved. results/devices
+        backup_directory: Backup directory to move folders to results/backups
+        """
+        
         for root, dirs, files in os.walk(source_directory):
             for dir_name in dirs:
                 if dir_name.endswith("-noreport"):
@@ -56,6 +76,9 @@ class Reporter:
                     shutil.move(source_dir, dest_dir)
                 
     def process_file(self, file_path: str):
+        """
+        Process a log file and extract relevant information
+        """
         with open(file_path, 'r') as file:
             content = file.read()
 
@@ -69,12 +92,25 @@ class Reporter:
         logger.info(f"Información de la misión '{mission_name}' y tipo de dispositivo '{device_type}' registrada con éxito.")
 
     def extract_value(self, lines: List[str], keyword: str) -> str:
+        """
+        Extract a value from lines containing a specific keyword
+
+        Args:
+            lines: list of lines to search for the keyword
+            keyword: keyword to search
+
+        Returns:
+        The extracted value or "unknown" if not found
+        """
         for line in lines:
             if keyword in line:
                 return line.split(":")[1].strip()
         return "unknown"
 
     def generate_stats_report(self):
+        """
+        Generate a stats report based on processed log files
+        """
         stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime('%d%m%y%H%M%S')}.log"
         stats_path = os.path.join('apolo_11/results/reports', stats_filename)
         
