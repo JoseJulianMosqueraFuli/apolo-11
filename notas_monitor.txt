@@ -1,0 +1,23 @@
+identificador para cuando la misiòn es unkn... identificador ùnico q no sea hash, random time stamp
+Simulaciòn completa diferente a ciclos de ejecuciòn
+Simulaciòn 1     XX ejecuciones   y xxx archvios por cada ejecuciòn
+
+Devices carpeta pata simulaciones---- simulaciòn 1 xyz time stamp
+dentro de cada carpeta de simulaciòn, carpetas de ejecuciòn cada 20 seg, archivos de ejeciciòn
+
+luego de parar verificar 
+Verificar que Devices y back up exista
+Dentro de Devices crear la carpeta de la simulación
+Crear archivos, cantidad sale de random
+leer archivo json
+generar reporte (para dashboard)
+guardar en back up, la carpeta de la ejecución
+validar que no tenga que generar un grupo de files sin que haya terminado de generar el grupo anterior
+
+Folders:
+Devices
+Back up
+Reportes (aquí van los csv de cada ejecución y no hay más carpetas)
+
+Archivo de configuración para modificar características de la misión
+rutas deben ser relativas
