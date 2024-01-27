@@ -1,7 +1,8 @@
+from typing import List, Dict
 from .config import ConfigManager
 
-config_path = 'apolo_11/config/config.yaml'
-config = ConfigManager.read_yaml_config(config_path)
+config_path: str = 'apolo_11/config/config.yaml'
+config: dict = ConfigManager.read_yaml_config(config_path)
 
 class Mission:
     """
@@ -16,11 +17,11 @@ class Mission:
         Initialize a Mission object
         Reads mission names and codes from the configuration file
         """
-        self._name = config['missions']['names']
-        self._codes = config['missions']['codes']
+        self._name: list[str] = config['missions']['names']
+        self._codes: dict[str,str] = config['missions']['codes']
         
     @property
-    def codes(self):
+    def codes(self)-> dict[str, str]:
         """
         Get the mission codes
         Returns:
@@ -29,7 +30,7 @@ class Mission:
         return self._codes
 
     @property
-    def name(self):
+    def name(self) -> list[str]:
         """
         Get list of mission name
 
@@ -48,18 +49,18 @@ class Device:
         _status (list): list of device statuses
     """
     def __init__(self):   
-        self._type = config['devices']['types']
-        self._status = config['devices']['status']
+        self._type: list[str] = config['devices']['types']
+        self._status: list[str] = config['devices']['status']
 
     @property
-    def type(self):
+    def type(self) -> list[str]:
         """
         Get list of devise type
         """
         return self._type
 
     @property
-    def status(self):
+    def status(self) -> list[str]:
         """
         Get list of devise status
         """
