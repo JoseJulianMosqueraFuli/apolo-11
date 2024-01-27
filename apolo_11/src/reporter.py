@@ -1,15 +1,18 @@
 import os
 import logging
 import shutil
-import time
 
 from datetime import datetime
 from collections import defaultdict
 from typing import List
 
 # Loggin configuration
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('INFO: %(message)s')
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class Reporter:
     def __init__(self):
@@ -35,9 +38,13 @@ class Reporter:
             self.generate_stats_report()
 
             self.move_folders_to_backup(input_directory, backup_directory)
+            
+            logger.info(f"Procesamiento de archivos completado con éxito. "
+                        f"Se ha generado un informe en {self.report_folder} y "
+                        f"se han movido los archivos procesados a {backup_directory}")
 
         except Exception as e:
-            logger.error(f"Error durante el procesamiento: {e}")
+            logger.error(f"Algunos archivos serán procesados en la siguiente versión del reporte.")
 
     def move_folders_to_backup(self, source_directory="./apolo_11/results/devices", backup_directory="./apolo_11/results/backups"):
         for root, dirs, files in os.walk(source_directory):
@@ -58,6 +65,8 @@ class Reporter:
         device_status = self.extract_value(lines, "Device Status")
 
         self.devices_reports[(mission_name, device_type)].append(device_status)
+        
+        logger.info(f"Información de la misión '{mission_name}' y tipo de dispositivo '{device_type}' registrada con éxito.")
 
     def extract_value(self, lines: List[str], keyword: str) -> str:
         for line in lines:
@@ -68,6 +77,8 @@ class Reporter:
     def generate_stats_report(self):
         stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime('%d%m%y%H%M%S')}.log"
         stats_path = os.path.join('apolo_11/results/reports', stats_filename)
+        
+        logger.info(f"Reporte {stats_filename} generado con éxito.")
 
         with open(stats_path, 'w') as stats_file:
             # Analysis
