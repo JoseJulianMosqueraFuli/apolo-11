@@ -1,9 +1,11 @@
+from typing import Dict
+
 import os
 import yaml
 
 class ConfigManager:
     @staticmethod
-    def read_yaml_config(config_path):
+    def read_yaml_config(config_path: str) -> Dict:
         """
         Read YAML config from file
 
