@@ -8,8 +8,8 @@ class Mission:
     A class representing a mission
 
     Attributes:
-        _name: list of mission names
-        _codes: dictionary (configfile) mapping mission names to their codes 
+        _name (list): list of mission names
+        _codes(dict): dictionary (configfile) mapping mission names to their codes 
     """
     def __init__(self):
         self._name = config['missions']['names']
@@ -40,8 +40,8 @@ class Device:
     A class representing a device
 
     Attributes:
-        _type: list of device types
-        _status: list of device statuses
+        _type (list): list of device types
+        _status (list): list of device statuses
     """
     def __init__(self):   
         self._type = config['devices']['types']
