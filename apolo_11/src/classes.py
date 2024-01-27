@@ -12,6 +12,10 @@ class Mission:
         _codes(dict): dictionary (configfile) mapping mission names to their codes 
     """
     def __init__(self):
+        """
+        Initialize a Mission object
+        Reads mission names and codes from the configuration file
+        """
         self._name = config['missions']['names']
         self._codes = config['missions']['codes']
         
