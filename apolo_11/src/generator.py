@@ -1,9 +1,10 @@
+from typing import Union
+
 import os
 import random
 import uuid
 import logging
 from datetime import datetime
-from typing import Union
 
 from .config import ConfigManager
 from .classes import Mission, Device
