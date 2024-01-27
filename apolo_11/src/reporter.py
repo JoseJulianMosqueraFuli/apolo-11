@@ -22,20 +22,20 @@ class Reporter:
         devices_reports (defaultdict): List to store reports categorized 
         by mission and device type.    
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.devices_reports = defaultdict(list)
         
-    def generate_report_folder(self, base_path='./apolo_11/results') -> None:
+    def generate_report_folder(self, base_path: str ='./apolo_11/results') -> None:
         """
         Generate folders for storing backup and report files     
             
         """
-        folders: list = ['backups', 'reports']
+        folders: list[str] = ['backups', 'reports']
         for folder in folders:
             folder_path = os.path.join(base_path, folder)
             os.makedirs(folder_path, exist_ok=True)
 
-    def process_files(self, input_directory: str, backup_directory: str):
+    def process_files(self, input_directory: str, backup_directory: str) -> None:
         """
         Process log files, generate reports, and move folders to backup
         """
@@ -75,7 +75,7 @@ class Reporter:
                     dest_dir = os.path.join(backup_directory, dest_dir_name)
                     shutil.move(source_dir, dest_dir)
                 
-    def process_file(self, file_path: str):
+    def process_file(self, file_path: str) -> None:
         """
         Process a log file and extract relevant information
         """
@@ -96,8 +96,8 @@ class Reporter:
         Extract a value from lines containing a specific keyword
 
         Args:
-            lines: list of lines to search for the keyword
-            keyword: keyword to search
+            lines(List): list of lines to search for the keyword
+            keyword (str): keyword to search
 
         Returns:
         The extracted value or "unknown" if not found
@@ -107,7 +107,7 @@ class Reporter:
                 return line.split(":")[1].strip()
         return "unknown"
 
-    def generate_stats_report(self):
+    def generate_stats_report(self) -> None:
         """
         Generate a stats report based on processed log files
         """
