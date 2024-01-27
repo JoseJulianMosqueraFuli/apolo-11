@@ -1,11 +1,19 @@
 import os
 import random
 import uuid
+import logging
 from datetime import datetime
 from typing import Union
 
 from .config import ConfigManager
 from .classes import Mission, Device
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('INFO: %(message)s')
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 config_path: str = 'apolo_11/config/config.yaml'
 config: dict = ConfigManager.read_yaml_config(config_path)
@@ -64,11 +72,11 @@ class Generator:
 
                 with open(file_path, 'w') as file:
                     file.write(file_content)
-
+            logger.info(f"Recepción de información de misiones y dispositivos en proceso.")
             self.save_cycle_number()
 
         except KeyboardInterrupt:
-            print("Files generation stopped by keyboard interrupt")
+            logger.info("Generación de archivos interrumpida por teclado.")
 
     def load_cycle_number(self):
         try:
