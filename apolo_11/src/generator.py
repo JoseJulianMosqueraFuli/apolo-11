@@ -72,7 +72,9 @@ class Generator:
 
                 with open(file_path, 'w') as file:
                     file.write(file_content)
-            logger.info(f"Recepción de información de misiones y dispositivos en proceso.")
+            logger.info(f"Archivo de misión creado: {os.path.basename(file_path)}")
+            logger.info(f"Datos del archivo creado:\n{file_content}")
+            
             self.save_cycle_number()
 
         except KeyboardInterrupt:

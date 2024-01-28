@@ -39,13 +39,13 @@ class Reporter:
 
             self.move_folders_to_backup(input_directory, backup_directory)
             
-            logger.info(f"Procesamiento de archivos completado con éxito. "
+            logger.info(f"Procesamiento de archivos completado con éxito."
                         f"Se ha generado un informe en {self.report_folder} y "
                         f"se han movido los archivos procesados a {backup_directory}")
 
         except Exception as e:
             logger.error(f"Algunos archivos serán procesados en la siguiente versión del reporte.")
-
+                         
     def move_folders_to_backup(self, source_directory="./apolo_11/results/devices", backup_directory="./apolo_11/results/backups"):
         for root, dirs, files in os.walk(source_directory):
             for dir_name in dirs:
