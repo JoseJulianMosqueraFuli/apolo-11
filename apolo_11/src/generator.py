@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Union
 
 import os
@@ -18,6 +19,16 @@ logger.addHandler(handler)
 
 config_path: str = 'apolo_11/config/config.yaml'
 config: dict = ConfigManager.read_yaml_config(config_path)
+
+@dataclass
+class GeneratedFile:
+    """Represents a generated log file
+    Attributes:
+        filename (str): The name of the generated log file
+        content (str): The content of the generated log file    
+    """
+    filename: str
+    content: str
 
 class Generator:
     """Generate files with mission and devise data
@@ -78,7 +89,7 @@ class Generator:
 
         filename = self.generate_filename(mission_name, file_number)
 
-        return filename, content
+        return GeneratedFile(filename, content)
 
     def generate_files(self, num_files_min: int, num_files_max: int):
         """Generate log files with random data
