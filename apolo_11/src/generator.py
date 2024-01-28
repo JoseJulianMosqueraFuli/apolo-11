@@ -106,8 +106,8 @@ class Generator:
             random_number: int = random.randint(num_files_min, num_files_max)
 
             for file_number in range(1, random_number + 1):
-                filename, file_content = self.generate_contentfile(file_number)
-                file_path: str = os.path.join(output_directory, filename)
+                generated_file = self.generate_contentfile(file_number)
+                file_path: str = os.path.join(output_directory, generated_file.filename)
 
                 with open(file_path, 'w') as file:
                     file.write(file_content)
