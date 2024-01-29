@@ -152,7 +152,7 @@ class Generator:
             str: output directory path
         """
         current_directory: str = os.path.dirname(os.path.abspath(__file__))
-        output_directory: str = os.path.join(current_directory, f"./../results/devices/cycle-{generate_files_call_count}-{times_stamp}-noreport")
+        output_directory: str = os.path.join(current_directory, f"{config['routes']['cycle_folder']}")
 
         os.makedirs(output_directory, exist_ok=True)
         return output_directory
