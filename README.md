@@ -42,11 +42,15 @@ We assume that the time for reporter always be mayor than the time to generate f
 
    </b>
 
-2. Navigate to the apoll
+2. Navigate to the apolo11
 
    ```bash
    cd apolo-11/
    ```
+
+   > [!IMPORTANT]
+   >
+   > - The project uses a configuration file `config/config.yml` where you can find various settings for the simulation and monitoring system. It includes details about missions, codes, date formats, and other relevant parameters. Refer to the [config file](apolo_11/config/config.yaml) for more information.
 
 3. Installation dependencies with Poetry
 
@@ -115,12 +119,16 @@ apolo-11/
 |-- pyproject.toml
 ```
 
-## Optionals that we consider
+![Specific](docs/images/DetailDiagram.png)
+![time](docs/images/time_consideration.jpg)
+
+## considerations
 
 Here are some things that we consider to add next:
 
 - Create \*.log files from Logger configuration
 - Alternatives to parallel processing using Threads or Async.
+- Improve testing performance, because last changes break it.
 - Always could be improve
 
 ## License
