@@ -1,59 +1,120 @@
+![Softserve](docs/images/softserve.png)
+
+# NASA Apollo 11 Python Bootcamp Challenge
+
 This repository is part of the Python Bootcamp NASA challenge, known as Apollo 11. It implements a Simulation and Monitoring System designed to simulate a monitoring system for NASA's crucial Apollo 11 mission.
 
 ## Overview
 
 The system performs the following tasks:
 
-- Generates simulated device data logs for various NASA missions.
-- Analyzes log data and computes statistics for mission-critical reporting.
-- Manages data logs, storage, and archiving processes.
-- Outputs a visual dashboard for tracking device status.
+1. Generates simulated device data logs for various NASA missions.
+2. Analyzes log data and computes statistics for mission-critical reporting.
+3. Manages data logs, storage, and archiving processes.
+4. Outputs a visual dashboard for tracking device status.
 
-## Usage
+## Index
 
-To run the simulation, execute the main entrypoint script `main.py`. Ensure that you have installed all required dependencies within a virtual environment.
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Considerations](#considerations)
+- [License](#license)
+- [Authors](#authors)
 
 ## Getting Started
 
-### Project Structure
+1. Clone the repository:
+
+   ```bash
+   git clone git@github.com:JoseJulianMosqueraFuli/apolo-11.git
+   ```
+
+   > [!NOTE]  
+   > If you don't have installed poetry, please check this link [poetry-install](https://github.com/python-poetry/install.python-poetry.org) to install.
+
+   > <b>Check with
+
+   ```bash
+   Poetry --version
+   ```
+
+   </b>
+
+2. Navigate to the apoll
+
+   ```bash
+   cd apolo-11/
+   ```
+
+3. Installation dependencies with Poetry
+
+   ```bash
+   Poetry install
+   ```
+
+4. Activate environment
+
+   ```bash
+   Poetry shell
+   ```
+
+5. Run App
+
+   ```bash
+   python main.py --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
+   ```
+
+## Project Structure
 
 Proposal general diagram:
 
-![General Diagram](docs/images/general-diagram.png)
+![General](docs/images/general-diagram.png)
 
 Proposal key folders and files:
 
 ```linux
-nasa-apollo-11/
+apolo-11/
 |
-|--nasa_apollo_11/
-|      |-- src/
-|      |-- data/
-|      |-- config/
+|-- config/
+|   |-- config.yml
+|-- src/
+|   |-- classes.py
+|   |-- reporter.py
+|   |-- generator.py
+|   |-- config.py
+|   |-- __init__.py
 |
 |-- tests/
 |   |-- test.py
 |
+|-- results/
+|   |-- devices/
+|   |-- backups/
+|   |-- reports/
+|
 |-- docs/
 |
-|-- config.cfg
+|-- setup.cfg
 |-- main.py
+|-- .gitignore
+|-- License
+|-- poetry.lock
+|-- Readme.md
+|-- pyproject.toml
 ```
 
-### Installation with Poetry
+## Optionals that we consider
 
-```bash
-poetry install
-```
+Here are some things that we consider to add next:
 
-```bash
-poetry shell
-```
+- Create \*.log files from Logger configuration
+- Alternatives to parallel processing using Threads or Async.
+- Always could be improve
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
 
-## Author
+## Authors
 
-Built by Alejandra Quiroz Gómez, Jose Julian Mosquera Fuli.
+Built by Alejandra Quiroz Gómez, Sara Palacio and Jose Julian Mosquera Fuli.
