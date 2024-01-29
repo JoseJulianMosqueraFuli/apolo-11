@@ -58,10 +58,14 @@ The system performs the following tasks:
    Poetry shell
    ```
 
-5. Run App
+5. Run App, with require values.
 
    ```bash
-   python main.py --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
+   poetry run python3 main.py --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
+   or
+   ################################
+   # With default values
+   python3 run python3 main.py
    ```
 
 ## Project Structure
