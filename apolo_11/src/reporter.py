@@ -9,6 +9,7 @@ from .config import ConfigManager
 
 config: dict = ConfigManager.read_yaml_config()
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('INFO: %(message)s')
@@ -26,12 +27,15 @@ class Reporter:
     """
     def __init__(self) -> None:
         self.devices_reports = defaultdict(list)
-        
-    def generate_report_folder(self, base_path=config['routes']['results']) -> None:
+        self.config = ConfigManager.read_yaml_config()
+          
+    
+    def generate_report_folder(self, base_path=None) -> None:
         """
         Generate folders for storing backup and report files     
             
         """
+        base_path = base_path or self.config['routes'][0]['results']
         folders: list[str] = ['backups', 'reports']
         for folder in folders:
             folder_path = os.path.join(base_path, folder)
@@ -61,14 +65,16 @@ class Reporter:
         except Exception as e:
             logger.error(f"Algunos archivos serán procesados en la siguiente versión del reporte.")
                          
-
-    def move_folders_to_backup(self, source_directory=config['routes']['devices'], backup_directory=config['routes']['backups']):
+        
+    def move_folders_to_backup(self, source_directory=None, backup_directory=None):
         """
         Move folders with noreport to backup directory
         
         source_directory: Source directory containing folders to be moved. results/devices
         backup_directory: Backup directory to move folders to results/backups
         """
+        source_directory = self.config['routes']['devices']
+        backup_directory = self.config['routes']['backups']
         for root, dirs, files in os.walk(source_directory):
             for dir_name in dirs:
                 if dir_name.endswith("-noreport"):
@@ -118,7 +124,7 @@ class Reporter:
         
         logger.info(f"Reporte {stats_filename} generado con éxito.")
     def generate_stats_report(self):
-        stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime(config['date_format'])}.log"
+        stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime(self.config['date_format'])}.log"
         stats_path = os.path.join(config['routes']['reports'], stats_filename)
 
         with open(stats_path, 'w') as stats_file:
