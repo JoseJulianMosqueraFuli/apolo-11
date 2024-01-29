@@ -7,8 +7,6 @@ from collections import defaultdict
 from typing import List
 from .config import ConfigManager
 
-config: dict = ConfigManager.read_yaml_config()
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -17,25 +15,26 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+config = ConfigManager.read_yaml_config()
+
+
 class Reporter:
     """
     Generate reports based on log files
-    
+
     Attributes:
-        devices_reports (defaultdict): List to store reports categorized 
-        by mission and device type.    
+        devices_reports (defaultdict): List to store reports categorized
+        by mission and device type.
     """
     def __init__(self) -> None:
         self.devices_reports = defaultdict(list)
-        self.config = ConfigManager.read_yaml_config()
-          
-    
+
     def generate_report_folder(self, base_path=None) -> None:
         """
-        Generate folders for storing backup and report files     
-            
+        Generate folders for storing backup and report files
+
         """
-        base_path = base_path or self.config['routes'][0]['results']
+        base_path = base_path or config['routes'][0]['results']
         folders: list[str] = ['backups', 'reports']
         for folder in folders:
             folder_path = os.path.join(base_path, folder)
@@ -57,24 +56,20 @@ class Reporter:
             self.generate_stats_report()
 
             self.move_folders_to_backup(input_directory, backup_directory)
-            
-            logger.info(f"Procesamiento de archivos completado con éxito."
-                        f"Se ha generado un informe en {self.report_folder} y "
-                        f"se han movido los archivos procesados a {backup_directory}")
 
         except Exception as e:
-            logger.error(f"Algunos archivos serán procesados en la siguiente versión del reporte.")
-                         
-        
+            logger.error(f"Error durante el procesamiento: {e}")
+
     def move_folders_to_backup(self, source_directory=None, backup_directory=None):
         """
         Move folders with noreport to backup directory
-        
+
         source_directory: Source directory containing folders to be moved. results/devices
         backup_directory: Backup directory to move folders to results/backups
         """
-        source_directory = self.config['routes']['devices']
-        backup_directory = self.config['routes']['backups']
+        source_directory = config['routes'][1]['devices']
+        backup_directory = config['routes'][2]['backups']
+
         for root, dirs, files in os.walk(source_directory):
             for dir_name in dirs:
                 if dir_name.endswith("-noreport"):
@@ -82,7 +77,7 @@ class Reporter:
                     dest_dir_name = dir_name[:-9]
                     dest_dir = os.path.join(backup_directory, dest_dir_name)
                     shutil.move(source_dir, dest_dir)
-                
+
     def process_file(self, file_path: str) -> None:
         """
         Process a log file and extract relevant information
@@ -96,8 +91,8 @@ class Reporter:
         device_status = self.extract_value(lines, "Device Status")
 
         self.devices_reports[(mission_name, device_type)].append(device_status)
-        
-        logger.info(f"Información de la misión '{mission_name}' y tipo de dispositivo '{device_type}' registrada con éxito.")
+
+        logger.info(f"Mision '{mission_name}' y dispositivo '{device_type}' registrada con éxito.")
 
     def extract_value(self, lines: List[str], keyword: str) -> str:
         """
@@ -119,13 +114,8 @@ class Reporter:
         """
         Generate a stats report based on processed log files
         """
-        stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime('%d%m%y%H%M%S')}.log"
-        stats_path = os.path.join('apolo_11/results/reports', stats_filename)
-        
-        logger.info(f"Reporte {stats_filename} generado con éxito.")
-    def generate_stats_report(self):
-        stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime(self.config['date_format'])}.log"
-        stats_path = os.path.join(config['routes']['reports'], stats_filename)
+        stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime(config['date_format'])}.log"
+        stats_path = os.path.join(config['routes'][3]['reports'], stats_filename)
 
         with open(stats_path, 'w') as stats_file:
             # Analysis
@@ -150,9 +140,10 @@ class Reporter:
 
             # Percentage
             stats_file.write("\nCálculo de porcentajes:\n")
-            total_files = len(self.devices_reports)
             for (mission, device_type), statuses in self.devices_reports.items():
                 percentage = len([status for status in statuses if status != "unknown"]) / len(statuses) * 100
-                stats_file.write(f"Misión: {mission}, Tipo de Dispositivo: {device_type}, Porcentaje: {percentage:.2f}%\n")
+                stats_file.write(
+                    f"Misión: {mission}, Tipo de Dispositivo: {device_type}, "
+                    f"Porcentaje: {percentage:.2f}%\n")
 
         logger.info(f"Informe estadístico generado en: {stats_path}")

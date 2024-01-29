@@ -20,7 +20,7 @@ class Mission(Configurable):
 
     Attributes:
         _name (list): list of mission names
-        _codes (dict): dictionary (config file) mapping mission names to their codes 
+        _codes (dict): dictionary (config file) mapping mission names to their codes
     """
     def __init__(self):
         """
@@ -57,7 +57,7 @@ class Device(Configurable):
         _type (list): list of device types
         _status (list): list of device statuses
     """
-    def __init__(self):   
+    def __init__(self):
         super().__init__('devices')
 
     @property
