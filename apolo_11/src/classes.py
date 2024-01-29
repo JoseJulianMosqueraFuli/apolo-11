@@ -1,46 +1,55 @@
 from typing import List, Dict
 from .config import ConfigManager
 
-config_path: str = 'apolo_11/config/config.yaml'
-config: dict = ConfigManager.read_yaml_config(config_path)
 
-class Mission:
+config: dict = ConfigManager.read_yaml_config()
+
+
+class Configurable:
+    def __init__(self, config_key):
+        self._config_key = config_key
+        self._load_config()
+
+    def _load_config(self):
+        self._config_data = config[self._config_key]
+
+
+class Mission(Configurable):
     """
     A class representing a mission
 
     Attributes:
         _name (list): list of mission names
-        _codes(dict): dictionary (configfile) mapping mission names to their codes 
+        _codes (dict): dictionary (config file) mapping mission names to their codes 
     """
     def __init__(self):
         """
         Initialize a Mission object
         Reads mission names and codes from the configuration file
         """
-        self._name: list[str] = config['missions']['names']
-        self._codes: dict[str,str] = config['missions']['codes']
-        
+        super().__init__('missions')
+
     @property
-    def codes(self)-> dict[str, str]:
+    def codes(self) -> Dict[str, str]:
         """
         Get the mission codes
         Returns:
         dictionary mapping mission name to code
         """
-        return self._codes
+        return self._config_data['codes']
 
     @property
-    def name(self) -> list[str]:
+    def name(self) -> List[str]:
         """
         Get list of mission name
 
         Returns:
         list of mission names
         """
-        return self._name
+        return self._config_data['names']
 
 
-class Device:
+class Device(Configurable):
     """
     A class representing a device
 
@@ -49,20 +58,18 @@ class Device:
         _status (list): list of device statuses
     """
     def __init__(self):   
-        self._type: list[str] = config['devices']['types']
-        self._status: list[str] = config['devices']['status']
+        super().__init__('devices')
 
     @property
-    def type(self) -> list[str]:
+    def type(self) -> List[str]:
         """
-        Get list of devise type
+        Get list of device type
         """
-        return self._type
+        return self._config_data['types']
 
     @property
-    def status(self) -> list[str]:
+    def status(self) -> List[str]:
         """
-        Get list of devise status
+        Get list of device status
         """
-        
-        return self._status
+        return self._config_data['status']
