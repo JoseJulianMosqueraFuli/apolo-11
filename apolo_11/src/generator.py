@@ -17,8 +17,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-config_path: str = 'apolo_11/config/config.yaml'
-config: dict = ConfigManager.read_yaml_config(config_path)
+config: dict = ConfigManager.read_yaml_config()
 
 @dataclass
 class GeneratedFile:
@@ -106,7 +105,7 @@ class Generator:
             random_number: int = random.randint(num_files_min, num_files_max)
 
             for file_number in range(1, random_number + 1):
-                generated_file = self.generate_contentfile(file_number)
+                generated_file,file_content = self.generate_contentfile(file_number)
                 file_path: str = os.path.join(output_directory, generated_file.filename)
 
                 with open(file_path, 'w') as file:

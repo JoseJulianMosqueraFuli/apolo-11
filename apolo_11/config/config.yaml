@@ -34,7 +34,7 @@ devices:
 date_format: "%d%m%y%H%M%S"
 
 routes:
-  - devices: /results/devices/
-  - backups: /results/backups/
-  - reports: /results/reports/
-  - cycle_folder: /results/devices/cycle-{generate_files_call_count}-{times_stamp}-noreport
+  - results: ./apolo_11/results
+  - devices: ./apolo_11/results/devices
+  - backups: ./apolo_11/results/backups/
+  - reports: ./apolo_11/results/reports/

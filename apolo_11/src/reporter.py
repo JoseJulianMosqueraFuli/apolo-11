@@ -5,8 +5,10 @@ import shutil
 from datetime import datetime
 from collections import defaultdict
 from typing import List
+from .config import ConfigManager
 
-# Loggin configuration
+config: dict = ConfigManager.read_yaml_config()
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('INFO: %(message)s')
@@ -25,7 +27,7 @@ class Reporter:
     def __init__(self) -> None:
         self.devices_reports = defaultdict(list)
         
-    def generate_report_folder(self, base_path: str ='./apolo_11/results') -> None:
+    def generate_report_folder(self, base_path=config['routes']['results']) -> None:
         """
         Generate folders for storing backup and report files     
             
@@ -59,19 +61,19 @@ class Reporter:
         except Exception as e:
             logger.error(f"Algunos archivos serán procesados en la siguiente versión del reporte.")
                          
-    def move_folders_to_backup(self, source_directory="./apolo_11/results/devices", backup_directory="./apolo_11/results/backups"):
+
+    def move_folders_to_backup(self, source_directory=config['routes']['devices'], backup_directory=config['routes']['backups']):
         """
         Move folders with noreport to backup directory
         
         source_directory: Source directory containing folders to be moved. results/devices
         backup_directory: Backup directory to move folders to results/backups
         """
-        
         for root, dirs, files in os.walk(source_directory):
             for dir_name in dirs:
                 if dir_name.endswith("-noreport"):
                     source_dir = os.path.join(root, dir_name)
-                    dest_dir_name = dir_name[:-9]  # Delete ("-noreport")
+                    dest_dir_name = dir_name[:-9]
                     dest_dir = os.path.join(backup_directory, dest_dir_name)
                     shutil.move(source_dir, dest_dir)
                 
@@ -115,6 +117,9 @@ class Reporter:
         stats_path = os.path.join('apolo_11/results/reports', stats_filename)
         
         logger.info(f"Reporte {stats_filename} generado con éxito.")
+    def generate_stats_report(self):
+        stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime(config['date_format'])}.log"
+        stats_path = os.path.join(config['routes']['reports'], stats_filename)
 
         with open(stats_path, 'w') as stats_file:
             # Analysis
