@@ -13,6 +13,8 @@ The system performs the following tasks:
 3. Manages data logs, storage, and archiving processes.
 4. Outputs a visual dashboard for tracking device status.
 
+We assume that the time for reporter always be mayor than the time to generate files, this case could be an improvement in future releases, and for this case we not control the possibility of error.
+
 ## Index
 
 - [Getting Started](#getting-started)
@@ -66,6 +68,12 @@ The system performs the following tasks:
    ################################
    # With default values
    python3 run python3 main.py
+   ```
+
+6. Run the coverage
+
+   ```bash
+   poetry run pytest --cov=apolo_11
    ```
 
 ## Project Structure
