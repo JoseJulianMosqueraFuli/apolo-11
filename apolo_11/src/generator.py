@@ -100,7 +100,7 @@ class Generator:
         """
         try:
             self.load_cycle_number()
-            times_stamp: str = datetime.now().strftime('%Y%m%d%H%M%S')
+            times_stamp: str = datetime.now().strftime('%Y%m%d%H%M%S')   
             output_directory: str = self.create_output_directory(times_stamp, self.generate_files_call_count)
 
             random_number: int = random.randint(num_files_min, num_files_max)
@@ -152,7 +152,7 @@ class Generator:
             str: output directory path
         """
         current_directory: str = os.path.dirname(os.path.abspath(__file__))
-        output_directory: str = os.path.join(current_directory, f"{config['routes']['cycle_folder']}")
+        output_directory: str = os.path.join(current_directory, f"./../results/devices/cycle-{generate_files_call_count}-{times_stamp}-noreport")
 
         os.makedirs(output_directory, exist_ok=True)
         return output_directory
