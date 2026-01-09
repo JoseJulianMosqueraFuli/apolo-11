@@ -43,3 +43,16 @@ def test_device_class():
 def test_configurable_class_invalid_key():
     with pytest.raises(KeyError):
         invalid_key_instance = Configurable("invalid_key")
+
+
+@given(st.text().filter(lambda x: x not in ["missions", "devices", "general", "date_format", "routes"]))
+def test_property_invalid_config_keys_raise_keyerror(invalid_key):
+    """
+    Property 3: Claves de configuración inválidas lanzan KeyError
+    Validates: Requirements 2.3
+    
+    For any configuration key that does not exist in the loaded configuration,
+    the Configurable class SHALL raise a KeyError exception.
+    """
+    with pytest.raises(KeyError):
+        Configurable(invalid_key)
