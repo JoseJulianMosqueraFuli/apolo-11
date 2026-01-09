@@ -1,135 +1,133 @@
 ![Softserve](docs/images/softserve.png)
 
-# NASA Apollo 11 Python Bootcamp Challenge
+# NASA Apollo 11 - Simulation and Monitoring System
 
-This repository is part of the Python Bootcamp NASA challenge, known as Apollo 11. It implements a Simulation and Monitoring System designed to simulate a monitoring system for NASA's crucial Apollo 11 mission.
+A simulation and monitoring system for NASA space missions, developed as part of the Softserve Python Bootcamp Challenge.
+
+## About This Project
+
+This project was created as a learning exercise to practice Python development concepts including:
+
+- Object-oriented programming with classes and inheritance
+- File I/O operations and directory management
+- Configuration management with YAML
+- Unit testing and property-based testing
+- CLI argument parsing
+
+The system simulates a real-world scenario where multiple devices across different space missions generate telemetry data that needs to be collected, analyzed, and reported.
 
 ## Overview
 
-The system performs the following tasks:
+Apollo 11 simulates device monitoring for space missions. It generates simulated telemetry data, analyzes logs, and produces real-time statistical reports.
 
-1. Generates simulated device data logs for various NASA missions.
-2. Analyzes log data and computes statistics for mission-critical reporting.
-3. Manages data logs, storage, and archiving processes.
-4. Outputs a visual dashboard for tracking device status.
+**Main features:**
 
-We assume that the time for reporter always be mayor than the time to generate files, this case could be an improvement in future releases, and for this case we not control the possibility of error.
+- Data generator: Creates simulated log files for different missions and devices
+- Report analyzer: Processes logs and generates device status statistics
+- Backup management: Automatically archives processed data
+- TUI Dashboard: Terminal visual interface for real-time monitoring (in development)
 
-## Index
+## Installation
 
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Considerations](#considerations)
-- [License](#license)
-- [Authors](#authors)
+**Prerequisites:**
 
-## Getting Started
+- Python 3.10+
+- [Poetry](https://python-poetry.org/docs/#installation)
 
-1. Clone the repository:
+```bash
+# Clone the repository
+git clone git@github.com:JoseJulianMosqueraFuli/apolo-11.git
+cd apolo-11
 
-   ```bash
-   git clone git@github.com:JoseJulianMosqueraFuli/apolo-11.git
-   ```
+# Install dependencies
+poetry install
 
-   > [!NOTE]  
-   > If you don't have installed poetry, please check this link [poetry-install](https://github.com/python-poetry/install.python-poetry.org) to install.
+# Activate virtual environment
+poetry shell
+```
 
-   > <b>Check with
+## Usage
 
-   ```bash
-   Poetry --version
-   ```
+### Basic execution
 
-   </b>
+```bash
+# With default values
+poetry run python main.py
 
-2. Navigate to the apolo11
+# With custom parameters
+poetry run python main.py --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
+```
 
-   ```bash
-   cd apolo-11/
-   ```
+### CLI Parameters
 
-   > [!IMPORTANT]
-   >
-   > - The project uses a configuration file `config/config.yml` where you can find various settings for the simulation and monitoring system. It includes details about missions, codes, date formats, and other relevant parameters. Refer to the [config file](apolo_11/config/config.yaml) for more information.
+| Parameter              | Default | Description                                          |
+| ---------------------- | ------- | ---------------------------------------------------- |
+| `--num_files_min`      | 1       | Minimum number of log files to generate per cycle    |
+| `--num_files_max`      | 100     | Maximum number of log files to generate per cycle    |
+| `--generator_interval` | 20      | Time in seconds between each file generation cycle   |
+| `--reporter_interval`  | 60      | Time in seconds between each report generation cycle |
 
-3. Installation dependencies with Poetry
+**Note:** The reporter interval must be greater than the generator interval. The system runs multiple generation cycles before each report cycle.
 
-   ```bash
-   Poetry install
-   ```
+### Run tests
 
-4. Activate environment
+```bash
+# Tests with coverage
+poetry run pytest --cov=apolo_11
 
-   ```bash
-   Poetry shell
-   ```
-
-5. Run App, with require values.
-
-   ```bash
-   poetry run python3 main.py --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
-   or
-   ################################
-   # With default values
-   python3 run python3 main.py
-   ```
-
-6. Run the coverage
-
-   ```bash
-   poetry run pytest --cov=apolo_11
-   ```
+# Verbose tests
+poetry run pytest -v
+```
 
 ## Project Structure
 
-Proposal general diagram:
+```
+apolo-11/
+├── apolo_11/
+│   ├── config/
+│   │   └── config.yaml      # System configuration
+│   └── src/
+│       ├── classes.py       # Mission and Device classes
+│       ├── config.py        # ConfigManager
+│       ├── generator.py     # Log generator
+│       └── reporter.py      # Report processor
+├── tests/
+│   └── tests_src/           # Unit and property tests
+├── docs/
+│   └── images/              # Diagrams and visual documentation
+├── main.py                  # Entry point
+└── pyproject.toml           # Project dependencies
+```
+
+## Architecture
 
 ![General](docs/images/general-diagram.png)
 
-Proposal key folders and files:
+![Detail](docs/images/DetailDiagram.png)
 
-```linux
-apolo-11/
-|
-|-- config/
-|   |-- config.yml
-|-- src/
-|   |-- classes.py
-|   |-- reporter.py
-|   |-- generator.py
-|   |-- config.py
-|   |-- __init__.py
-|
-|-- tests/
-|   |-- test.py
-|
-|-- results/
-|   |-- devices/
-|   |-- backups/
-|   |-- reports/
-|
-|-- docs/
-|
-|-- setup.cfg
-|-- main.py
-|-- .gitignore
-|-- License
-|-- poetry.lock
-|-- Readme.md
-|-- pyproject.toml
-```
+## Configuration
 
-![Specific](docs/images/DetailDiagram.png)
-![time](docs/images/time_consideration.jpg)
+The `apolo_11/config/config.yaml` file contains system configuration:
 
-## considerations
+- Available missions and their codes
+- Device types and statuses
+- Directory paths
+- Date formats
+- Generation/report intervals
 
-Here are some things that we consider to add next:
+## Known Limitations
 
-- Create \*.log files from Logger configuration
-- Alternatives to parallel processing using Threads or Async.
-- Improve testing performance, because last changes break it.
-- Always could be improve
+- The reporter interval must always be greater than the generator interval. If files are generated faster than they can be processed, data may accumulate.
+- The system does not handle concurrent access to log files. Running multiple instances simultaneously is not supported.
+- Error handling during file processing is basic; malformed log files may cause issues.
+
+## Improvements in Progress
+
+- Bug fixes in `move_folders_to_backup`
+- Test coverage improvements
+- TUI Dashboard with Rich
+- Centralized and configurable logging
+- Parallel processing with threads/async
 
 ## License
 
