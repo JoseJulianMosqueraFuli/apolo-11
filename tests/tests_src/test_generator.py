@@ -87,7 +87,7 @@ def test_save_cycle_number(mock_join, mock_open, generator_instance):
     mock_file.write.assert_called_with('6')
 
 def test_create_output_directory(generator_instance):
-    # El método crea directorios relativos a apolo_11/src/
+    # Test que verifica el formato correcto del directorio creado
     times_stamp = '20230101120000'
     call_count = 999  # Usar un número único para evitar conflictos
 
@@ -95,7 +95,16 @@ def test_create_output_directory(generator_instance):
 
     # Verificar que el directorio fue creado
     assert os.path.exists(result)
-    assert f'cycle-{call_count}-{times_stamp}-noreport' in result
+    
+    # Verificar el formato correcto del directorio
+    expected_format = f'cycle-{call_count}-{times_stamp}-noreport'
+    assert expected_format in result
+    
+    # Verificar que termina con la estructura esperada
+    assert result.endswith(f'results/devices/{expected_format}')
+    
+    # Verificar que contiene la ruta relativa correcta
+    assert './../results/devices/' in result
 
     # Limpiar el directorio creado
     os.rmdir(result)
