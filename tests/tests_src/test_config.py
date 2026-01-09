@@ -1,11 +1,10 @@
-import yaml
 import pytest
 from apolo_11.src.config import ConfigManager
 
 
 @pytest.fixture
 def setup_test_environment(tmpdir):
-    tmpdir.mkdir("apolo_11/config")
+    tmpdir.mkdir("apolo_11").mkdir("config")
 
     tmp_config_path = tmpdir.join("apolo_11/config/config.yaml")
     tmp_config_path.write(
@@ -69,5 +68,8 @@ def test_read_yaml_config_empty_file(setup_test_environment):
 
     config_manager = ConfigManager()
 
-    with pytest.raises(yaml.YAMLError):
-        config_data = config_manager.read_yaml_config(empty_config_path)
+    # ConfigManager should raise ValueError for empty files
+    with pytest.raises(ValueError) as exc_info:
+        config_manager.read_yaml_config(str(empty_config_path))
+
+    assert "empty" in str(exc_info.value).lower()
