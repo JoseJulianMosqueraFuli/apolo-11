@@ -11,6 +11,7 @@ pytest = "^7.4.4"
 flake8 = "^7.0.0"
 pyyaml = "^6.0.1"
 pytest-cov = "^4.1.0"
+hypothesis = "^6.92.0"
 
 
 [build-system]
