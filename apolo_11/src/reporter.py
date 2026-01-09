@@ -64,17 +64,20 @@ class Reporter:
         """
         Move folders with noreport to backup directory
 
-        source_directory: Source directory containing folders to be moved. results/devices
-        backup_directory: Backup directory to move folders to results/backups
+        Args:
+            source_directory: Source directory containing folders to be moved.
+                            If None, uses config default (results/devices).
+            backup_directory: Backup directory to move folders to.
+                            If None, uses config default (results/backups).
         """
-        source_directory = config['routes'][1]['devices']
-        backup_directory = config['routes'][2]['backups']
+        source_directory = source_directory or config['routes'][1]['devices']
+        backup_directory = backup_directory or config['routes'][2]['backups']
 
         for root, dirs, files in os.walk(source_directory):
             for dir_name in dirs:
                 if dir_name.endswith("-noreport"):
                     source_dir = os.path.join(root, dir_name)
-                    dest_dir_name = dir_name[:-9]
+                    dest_dir_name = dir_name[:-9]  # Remove "-noreport" suffix
                     dest_dir = os.path.join(backup_directory, dest_dir_name)
                     shutil.move(source_dir, dest_dir)
 
