@@ -40,26 +40,51 @@ def test_generate_contentfile(mock_datetime, generator_instance):
     assert 'Device Status: ' in result.content
     assert 'Hash: ' in result.content
 
-def test_load_cycle_number(generator_instance):
-    # El método lee de apolo_11/src/cycle_number.txt (ruta fija)
-    # Solo verificamos que el método funciona sin errores
+@patch('builtins.open', create=True)
+@patch('os.path.join')
+def test_load_cycle_number(mock_join, mock_open, generator_instance):
+    # Test con archivo existente
+    mock_join.return_value = '/mocked/path/cycle_number.txt'
+    mock_file = mock_open.return_value.__enter__.return_value
+    mock_file.read.return_value.strip.return_value = '42'
+    
     generator_instance.load_cycle_number()
-    assert isinstance(generator_instance.generate_files_call_count, int)
-    assert generator_instance.generate_files_call_count >= 0
+    
+    assert generator_instance.generate_files_call_count == 42
+    mock_open.assert_called_with('/mocked/path/cycle_number.txt', 'r')
 
-def test_save_cycle_number(generator_instance):
-    # El método guarda en apolo_11/src/cycle_number.txt (ruta fija)
-    # Guardamos el valor actual, ejecutamos el test, y restauramos
+@patch('builtins.open', create=True)
+@patch('os.path.join')
+def test_load_cycle_number_file_not_found(mock_join, mock_open, generator_instance):
+    # Test con archivo no existente
+    mock_join.return_value = '/mocked/path/cycle_number.txt'
+    mock_open.side_effect = [FileNotFoundError, mock_open.return_value]
+    
     generator_instance.load_cycle_number()
-    original_count = generator_instance.generate_files_call_count
+    
+    # Cuando no existe el archivo, se inicializa en 0 y luego save_cycle_number() lo incrementa a 1
+    assert generator_instance.generate_files_call_count == 1
+    # Verifica que se llama save_cycle_number cuando no existe el archivo
+    assert mock_open.call_count == 2  # Una para leer (falla) y otra para escribir
 
-    # save_cycle_number incrementa y guarda
+@patch('builtins.open', create=True)
+@patch('os.path.join')
+def test_save_cycle_number(mock_join, mock_open, generator_instance):
+    # Test que verifica incremento y guardado correcto
+    mock_join.return_value = '/mocked/path/cycle_number.txt'
+    mock_file = mock_open.return_value.__enter__.return_value
+    
+    # Establecer un valor inicial
+    generator_instance.generate_files_call_count = 5
+    
     generator_instance.save_cycle_number()
-    assert generator_instance.generate_files_call_count == original_count + 1
-
-    # Restaurar el valor original
-    generator_instance.generate_files_call_count = original_count - 1
-    generator_instance.save_cycle_number()
+    
+    # Verificar que se incrementó
+    assert generator_instance.generate_files_call_count == 6
+    
+    # Verificar que se escribió el archivo con el valor correcto
+    mock_open.assert_called_with('/mocked/path/cycle_number.txt', 'w')
+    mock_file.write.assert_called_with('6')
 
 def test_create_output_directory(generator_instance):
     # El método crea directorios relativos a apolo_11/src/
