@@ -11,3 +11,13 @@ __pycache__/
 .idea/
 
 apolo_11/src/cycle_number.txt
+
+# Hypothesis test database
+.hypothesis/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Generated reports and results
+apolo_11/results/
