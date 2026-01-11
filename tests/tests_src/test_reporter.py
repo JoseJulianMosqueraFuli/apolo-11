@@ -185,6 +185,136 @@ def test_generate_stats_report(mock_datetime):
         assert 'Porcentaje:' in content
 
 
+def test_process_file_malformed_log():
+    """Test process_file method with malformed log file
+    
+    Requirements: 5.4 - Edge case: archivos malformados
+    """
+    with TemporaryDirectory() as tmp_dir:
+        # Create a malformed log file (no colons, invalid format)
+        log_file_path = os.path.join(tmp_dir, 'malformed.log')
+        log_content = """This is not a valid log file
+No colons here
+Mission without colon OrbitOne
+Device Type Satellite"""
+        
+        with open(log_file_path, 'w') as f:
+            f.write(log_content)
+        
+        # Create reporter instance and process the file
+        reporter_instance = Reporter()
+        reporter_instance.process_file(log_file_path)
+        
+        # Verify that malformed data is handled with "unknown"
+        key = ('unknown', 'unknown')
+        assert key in reporter_instance.devices_reports
+        assert reporter_instance.devices_reports[key] == ['unknown']
+
+
+def test_process_file_empty_log():
+    """Test process_file method with empty log file
+    
+    Requirements: 5.4 - Edge case: archivos vacíos
+    """
+    with TemporaryDirectory() as tmp_dir:
+        # Create an empty log file
+        log_file_path = os.path.join(tmp_dir, 'empty.log')
+        with open(log_file_path, 'w') as f:
+            f.write('')
+        
+        # Create reporter instance and process the file
+        reporter_instance = Reporter()
+        reporter_instance.process_file(log_file_path)
+        
+        # Verify that empty file is handled with "unknown" values
+        key = ('unknown', 'unknown')
+        assert key in reporter_instance.devices_reports
+        assert reporter_instance.devices_reports[key] == ['unknown']
+
+
+def test_process_files_empty_directory():
+    """Test process_files method with empty directory
+    
+    Requirements: 5.4 - Edge case: directorios vacíos
+    """
+    with TemporaryDirectory() as tmp_dir:
+        # Create empty directories
+        input_dir = os.path.join(tmp_dir, 'input')
+        backup_dir = os.path.join(tmp_dir, 'backup')
+        os.makedirs(input_dir)
+        os.makedirs(backup_dir)
+        
+        # Create reporter instance and process empty directory
+        reporter_instance = Reporter()
+        
+        # This should not raise an exception
+        reporter_instance.process_files(input_dir, backup_dir)
+        
+        # Verify no reports were generated (empty directory)
+        assert len(reporter_instance.devices_reports) == 0
+
+
+def test_process_files_directory_with_non_log_files():
+    """Test process_files method with directory containing non-log files
+    
+    Requirements: 5.4 - Edge case: archivos que no son .log
+    """
+    with TemporaryDirectory() as tmp_dir:
+        # Create directory with non-log files
+        input_dir = os.path.join(tmp_dir, 'input')
+        backup_dir = os.path.join(tmp_dir, 'backup')
+        os.makedirs(input_dir)
+        os.makedirs(backup_dir)
+        
+        # Create non-log files
+        with open(os.path.join(input_dir, 'readme.txt'), 'w') as f:
+            f.write('This is not a log file')
+        
+        with open(os.path.join(input_dir, 'config.json'), 'w') as f:
+            f.write('{"key": "value"}')
+        
+        # Create reporter instance and process directory
+        reporter_instance = Reporter()
+        reporter_instance.process_files(input_dir, backup_dir)
+        
+        # Verify no reports were generated (no .log files)
+        assert len(reporter_instance.devices_reports) == 0
+
+
+def test_generate_stats_report_empty_data():
+    """Test generate_stats_report method with no data
+    
+    Requirements: 5.4 - Edge case: sin datos para procesar
+    """
+    with TemporaryDirectory() as tmp_dir:
+        # Create reporter instance with no data
+        reporter_instance = Reporter()
+        
+        # Mock the config routes for reports directory
+        with patch('apolo_11.src.reporter.config', {'routes': [None, None, None, {'reports': tmp_dir}]}):
+            with patch('apolo_11.src.reporter.datetime') as mock_datetime:
+                mock_datetime.now.return_value.strftime.return_value = '010123120000'
+                reporter_instance.generate_stats_report()
+        
+        # Verify the report file was created even with no data
+        expected_filename = 'APLSTATS-REPORT-010123120000.log'
+        report_path = os.path.join(tmp_dir, expected_filename)
+        assert os.path.exists(report_path)
+        
+        # Read and verify report content contains headers but no data
+        with open(report_path, 'r') as f:
+            content = f.read()
+        
+        # Verify report sections are present
+        assert 'Análisis de eventos:' in content
+        assert 'Gestión de desconexiones:' in content
+        assert 'Consolidación de misiones:' in content
+        assert 'Cálculo de porcentajes:' in content
+        
+        # Verify consolidation shows 0 inoperable devices
+        assert 'Total de dispositivos inoperables: 0' in content
+
+
 # Property-Based Tests
 from hypothesis import given, strategies as st, settings
 
