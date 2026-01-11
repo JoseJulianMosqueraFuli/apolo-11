@@ -41,7 +41,7 @@ class Reporter:
         try:
             self.generate_report_folder()
 
-            for root, dirs, files in os.walk(input_directory):
+            for root, _, files in os.walk(input_directory):
                 for file in files:
                     if file.endswith(".log"):
                         file_path = os.path.join(root, file)
@@ -67,7 +67,7 @@ class Reporter:
         source_directory = source_directory or config['routes'][1]['devices']
         backup_directory = backup_directory or config['routes'][2]['backups']
 
-        for root, dirs, files in os.walk(source_directory):
+        for root, dirs, _ in os.walk(source_directory):
             for dir_name in dirs:
                 if dir_name.endswith("-noreport"):
                     source_dir = os.path.join(root, dir_name)
