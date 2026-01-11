@@ -110,7 +110,11 @@ class Reporter:
         """
         for line in lines:
             if keyword in line:
-                return line.split(":")[1].strip()
+                parts = line.split(":")
+                if len(parts) > 1:
+                    return parts[1].strip()
+                else:
+                    return "unknown"
         return "unknown"
 
     def generate_stats_report(self) -> None:

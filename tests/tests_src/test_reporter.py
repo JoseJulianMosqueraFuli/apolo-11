@@ -145,7 +145,10 @@ def test_generate_stats_report(mock_datetime):
         reporter_instance.devices_reports[('ColonyMoon', 'Spaceship')] = ['good', 'good']
         
         # Mock the config routes for reports directory
-        with patch('apolo_11.src.reporter.config', {'routes': [None, None, None, {'reports': tmp_dir}]}):
+        with patch('apolo_11.src.reporter.config', {
+            'routes': [None, None, None, {'reports': tmp_dir}],
+            'date_format': '%d%m%y%H%M%S'
+        }):
             reporter_instance.generate_stats_report()
         
         # Verify the report file was created
@@ -291,7 +294,10 @@ def test_generate_stats_report_empty_data():
         reporter_instance = Reporter()
         
         # Mock the config routes for reports directory
-        with patch('apolo_11.src.reporter.config', {'routes': [None, None, None, {'reports': tmp_dir}]}):
+        with patch('apolo_11.src.reporter.config', {
+            'routes': [None, None, None, {'reports': tmp_dir}],
+            'date_format': '%d%m%y%H%M%S'
+        }):
             with patch('apolo_11.src.reporter.datetime') as mock_datetime:
                 mock_datetime.now.return_value.strftime.return_value = '010123120000'
                 reporter_instance.generate_stats_report()
