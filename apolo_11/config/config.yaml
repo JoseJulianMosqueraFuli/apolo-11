@@ -33,6 +33,10 @@ devices:
 
 date_format: "%d%m%y%H%M%S"
 
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
 routes:
   - results: ./apolo_11/results
   - devices: ./apolo_11/results/devices
