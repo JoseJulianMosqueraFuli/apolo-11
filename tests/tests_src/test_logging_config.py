@@ -11,7 +11,7 @@ import tempfile
 import os
 from io import StringIO
 from unittest.mock import patch
-from hypothesis import given, strategies as st
+from hypothesis import given, strategies as st, settings, HealthCheck
 import pytest
 
 from apolo_11.src.logging_config import setup_logging, get_logger
@@ -34,6 +34,7 @@ class TestLoggingConfig:
         assert logger.name == 'apolo_11.test_module'
 
     @given(st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=('Lu', 'Ll', 'Nd'))))
+    @settings(suppress_health_check=[HealthCheck.differing_executors], max_examples=100)
     def test_property_logging_format_consistency(self, log_message):
         """
         Feature: apolo-11-improvements, Property 5: Formato de logging consistente
