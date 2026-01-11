@@ -1,5 +1,6 @@
 import os
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 from apolo_11.src.reporter import Reporter
 
 def test_process_files():
@@ -70,6 +71,118 @@ def test_move_folders_to_backup():
         assert 'cycle-0' in backup_subdirs
         assert 'cycle-1' in backup_subdirs
         assert 'cycle-2' not in backup_subdirs
+
+
+def test_process_file():
+    """Test process_file method with valid log file
+    
+    Requirements: 5.2 - Test con archivo de log válido, verificar extracción de datos correcta
+    """
+    with TemporaryDirectory() as tmp_dir:
+        # Create a valid log file
+        log_file_path = os.path.join(tmp_dir, 'test.log')
+        log_content = """Date: 010123120000
+Mission: OrbitOne
+Device Type: Satellite
+Device Status: excellent
+Hash: 12345"""
+        
+        with open(log_file_path, 'w') as f:
+            f.write(log_content)
+        
+        # Create reporter instance and process the file
+        reporter_instance = Reporter()
+        reporter_instance.process_file(log_file_path)
+        
+        # Verify data extraction was correct
+        assert len(reporter_instance.devices_reports) == 1
+        
+        # Check that the correct mission and device type were extracted
+        key = ('OrbitOne', 'Satellite')
+        assert key in reporter_instance.devices_reports
+        
+        # Check that the device status was correctly extracted
+        assert reporter_instance.devices_reports[key] == ['excellent']
+
+
+def test_process_file_with_missing_fields():
+    """Test process_file method with log file missing some fields"""
+    with TemporaryDirectory() as tmp_dir:
+        # Create a log file with missing fields
+        log_file_path = os.path.join(tmp_dir, 'incomplete.log')
+        log_content = """Date: 010123120000
+Mission: OrbitOne
+Hash: 12345"""
+        
+        with open(log_file_path, 'w') as f:
+            f.write(log_content)
+        
+        # Create reporter instance and process the file
+        reporter_instance = Reporter()
+        reporter_instance.process_file(log_file_path)
+        
+        # Verify that missing fields are handled with "unknown"
+        key = ('OrbitOne', 'unknown')
+        assert key in reporter_instance.devices_reports
+        assert reporter_instance.devices_reports[key] == ['unknown']
+
+
+@patch('apolo_11.src.reporter.datetime')
+def test_generate_stats_report(mock_datetime):
+    """Test generate_stats_report method with test data
+    
+    Requirements: 5.3 - Test con datos de prueba, verificar formato del reporte
+    """
+    with TemporaryDirectory() as tmp_dir:
+        # Mock datetime for consistent filename
+        mock_datetime.now.return_value.strftime.return_value = '010123120000'
+        
+        # Create reporter instance and add test data
+        reporter_instance = Reporter()
+        
+        # Add test data to devices_reports
+        reporter_instance.devices_reports[('OrbitOne', 'Satellite')] = ['excellent', 'good', 'unknown']
+        reporter_instance.devices_reports[('ColonyMoon', 'Spaceship')] = ['good', 'good']
+        
+        # Mock the config routes for reports directory
+        with patch('apolo_11.src.reporter.config', {'routes': [None, None, None, {'reports': tmp_dir}]}):
+            reporter_instance.generate_stats_report()
+        
+        # Verify the report file was created
+        expected_filename = 'APLSTATS-REPORT-010123120000.log'
+        report_path = os.path.join(tmp_dir, expected_filename)
+        assert os.path.exists(report_path)
+        
+        # Read and verify report content
+        with open(report_path, 'r') as f:
+            content = f.read()
+        
+        # Verify report sections are present
+        assert 'Análisis de eventos:' in content
+        assert 'Gestión de desconexiones:' in content
+        assert 'Consolidación de misiones:' in content
+        assert 'Cálculo de porcentajes:' in content
+        
+        # Verify mission data is included
+        assert 'Misión: OrbitOne' in content
+        assert 'Misión: ColonyMoon' in content
+        assert 'Tipo de Dispositivo: Satellite' in content
+        assert 'Tipo de Dispositivo: Spaceship' in content
+        
+        # Verify status counts
+        assert 'Estado: excellent, Cantidad: 1' in content
+        assert 'Estado: good, Cantidad: 2' in content or 'Estado: good, Cantidad: 1' in content
+        assert 'Estado: unknown, Cantidad: 1' in content
+        
+        # Verify disconnections section
+        assert 'Desconexiones (unknown): 1' in content
+        assert 'Desconexiones (unknown): 0' in content
+        
+        # Verify consolidation section
+        assert 'Total de dispositivos inoperables: 1' in content
+        
+        # Verify percentage calculations are present
+        assert 'Porcentaje:' in content
 
 
 # Property-Based Tests

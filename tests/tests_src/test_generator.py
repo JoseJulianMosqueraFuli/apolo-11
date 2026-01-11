@@ -158,3 +158,58 @@ def test_default_content_generate_string():
     assert 'Date: 010123120000' in result
     assert 'Mission: OrbitOne' in result
     assert 'Hash: 12345' in result
+
+
+@patch('apolo_11.src.generator.os.makedirs')
+@patch('builtins.open', create=True)
+@patch('apolo_11.src.generator.Generator.load_cycle_number')
+@patch('apolo_11.src.generator.Generator.save_cycle_number')
+@patch('apolo_11.src.generator.Generator.create_output_directory')
+@patch('apolo_11.src.generator.Generator.generate_contentfile')
+@patch('apolo_11.src.generator.datetime')
+def test_generate_files(mock_datetime, mock_generate_contentfile, mock_create_output_directory,
+                       mock_save_cycle_number, mock_load_cycle_number, mock_open, mock_makedirs, generator_instance):
+    """Test generate_files method with mocks to avoid real I/O
+    
+    Requirements: 5.1 - Test con mocks para evitar I/O real, verificar creación de archivos
+    """
+    # Setup mocks
+    mock_datetime.now.return_value.strftime.return_value = '20230101120000'
+    mock_create_output_directory.return_value = '/mocked/output/dir'
+    
+    # Mock generate_contentfile to return test data
+    from apolo_11.src.generator import GeneratedFile
+    mock_generate_contentfile.side_effect = [
+        GeneratedFile('APLORBONE-0001.log', 'test content 1'),
+        GeneratedFile('APLORBONE-0002.log', 'test content 2')
+    ]
+    
+    # Mock file operations
+    mock_file = mock_open.return_value.__enter__.return_value
+    
+    # Mock random.randint to return a fixed number of files
+    with patch('apolo_11.src.generator.random.randint', return_value=2):
+        generator_instance.generate_files(1, 5)
+    
+    # Verify load_cycle_number was called
+    mock_load_cycle_number.assert_called_once()
+    
+    # Verify create_output_directory was called with timestamp and call count
+    mock_create_output_directory.assert_called_once_with('20230101120000', generator_instance.generate_files_call_count)
+    
+    # Verify generate_contentfile was called for each file
+    assert mock_generate_contentfile.call_count == 2
+    mock_generate_contentfile.assert_any_call(1)
+    mock_generate_contentfile.assert_any_call(2)
+    
+    # Verify files were written
+    assert mock_open.call_count == 2
+    mock_open.assert_any_call('/mocked/output/dir/APLORBONE-0001.log', 'w')
+    mock_open.assert_any_call('/mocked/output/dir/APLORBONE-0002.log', 'w')
+    
+    # Verify file content was written
+    mock_file.write.assert_any_call('test content 1')
+    mock_file.write.assert_any_call('test content 2')
+    
+    # Verify save_cycle_number was called
+    mock_save_cycle_number.assert_called_once()
