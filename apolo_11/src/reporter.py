@@ -1,19 +1,13 @@
 import os
-import logging
 import shutil
 
 from datetime import datetime
 from collections import defaultdict
 from typing import List
 from .config import ConfigManager
+from .logging_config import get_logger
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('INFO: %(message)s')
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__name__)
 
 config = ConfigManager.read_yaml_config()
 
@@ -58,7 +52,7 @@ class Reporter:
             self.move_folders_to_backup(input_directory, backup_directory)
 
         except Exception as e:
-            logger.error(f"Error durante el procesamiento: {e}")
+            logger.error("Error durante el procesamiento: %s", str(e))
 
     def move_folders_to_backup(self, source_directory=None, backup_directory=None):
         """
@@ -95,7 +89,7 @@ class Reporter:
 
         self.devices_reports[(mission_name, device_type)].append(device_status)
 
-        logger.info(f"Mision '{mission_name}' y dispositivo '{device_type}' registrada con éxito.")
+        logger.info("Mision '%s' y dispositivo '%s' registrada con éxito.", mission_name, device_type)
 
     def extract_value(self, lines: List[str], keyword: str) -> str:
         """
@@ -153,4 +147,4 @@ class Reporter:
                     f"Misión: {mission}, Tipo de Dispositivo: {device_type}, "
                     f"Porcentaje: {percentage:.2f}%\n")
 
-        logger.info(f"Informe estadístico generado en: {stats_path}")
+        logger.info("Informe estadístico generado en: %s", stats_path)

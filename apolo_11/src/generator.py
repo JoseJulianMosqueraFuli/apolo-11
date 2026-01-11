@@ -4,18 +4,13 @@ from typing import Union
 import os
 import random
 import uuid
-import logging
 from datetime import datetime
 
 from .config import ConfigManager
 from .classes import Mission, Device
+from .logging_config import get_logger
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('INFO: %(message)s')
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__name__)
 
 config: dict = ConfigManager.read_yaml_config()
 
@@ -136,8 +131,8 @@ class Generator:
 
                 with open(file_path, 'w') as file:
                     file.write(generated_file.content)
-                logger.info(f"Archivo de misión creado: {os.path.basename(file_path)}")
-                logger.info(f"Datos del archivo creado:\n{generated_file.content}")
+                logger.info("Archivo de misión creado: %s", os.path.basename(file_path))
+                logger.info("Datos del archivo creado:\n%s", generated_file.content)
 
             self.save_cycle_number()
 

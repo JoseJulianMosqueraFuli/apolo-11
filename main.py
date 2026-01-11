@@ -2,6 +2,10 @@ import argparse
 import time
 
 from apolo_11.src import generator, config, reporter
+from apolo_11.src.logging_config import setup_logging
+
+# Initialize centralized logging
+logger = setup_logging()
 
 config_instance = config.ConfigManager()
 config_data: dict = config_instance.read_yaml_config()
@@ -27,7 +31,7 @@ def main():
     args = parser.parse_args()
 
     if args.reporter_interval <= args.generator_interval:
-        print("Error: El intervalo de reportes debe ser mayor que el intervalo de generadores.")
+        logger.error("El intervalo de reportes debe ser mayor que el intervalo de generadores.")
         return
 
     generator_instance = generator.Generator()
@@ -51,7 +55,7 @@ def main():
             time.sleep(args.reporter_interval)
 
     except KeyboardInterrupt:
-        print("Proceso interrumpido por el usuario.")
+        logger.info("Proceso interrumpido por el usuario.")
 
 
 if __name__ == '__main__':
