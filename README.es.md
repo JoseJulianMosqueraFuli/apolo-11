@@ -1,31 +1,70 @@
+<div align="center">
+
 ![Softserve](docs/images/softserve.png)
 
-# NASA Apollo 11 - Sistema de Simulación y Monitoreo
+# 🚀 NASA Apollo 11 - Sistema de Simulación y Monitoreo
 
-Sistema de simulación y monitoreo para misiones espaciales NASA, desarrollado como parte del Python Bootcamp Challenge de Softserve.
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Poetry](https://img.shields.io/badge/Poetry-gestión%20de%20dependencias-blue.svg)](https://python-poetry.org/)
+[![Tests](https://img.shields.io/badge/Tests-45%20pasando-green.svg)](tests/)
+[![Cobertura](https://img.shields.io/badge/Cobertura-98%25-brightgreen.svg)](htmlcov/)
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](LICENSE)
+[![Rich](https://img.shields.io/badge/TUI-Rich%20Dashboard-purple.svg)](https://rich.readthedocs.io/)
 
-## Sobre Este Proyecto
+_Un sistema profesional de simulación y monitoreo para misiones espaciales NASA_
 
-Este proyecto fue creado como ejercicio de aprendizaje para practicar conceptos de desarrollo en Python incluyendo:
+[English](README.md) • [Español](README.es.md)
 
-- Programación orientada a objetos con clases y herencia
-- Operaciones de archivos y gestión de directorios
-- Gestión de configuración con YAML
-- Testing unitario y property-based testing
-- Parsing de argumentos CLI
+</div>
 
-El sistema simula un escenario real donde múltiples dispositivos en diferentes misiones espaciales generan datos de telemetría que necesitan ser recolectados, analizados y reportados.
+---
 
-## Descripción
+## 📋 Tabla de Contenidos
 
-Apollo 11 simula el monitoreo de dispositivos en misiones espaciales. Genera datos de telemetría simulados, analiza logs y produce reportes estadísticos en tiempo real.
+- [Acerca de](#-acerca-de)
+- [Características](#-características)
+- [Instalación](#-instalación)
+- [Uso](#-uso)
+- [Dashboard](#-dashboard-tui)
+- [Arquitectura](#-arquitectura)
+- [Testing](#-testing)
+- [Configuración](#-configuración)
+- [Contribuir](#-contribuir)
+- [Licencia](#-licencia)
 
-**Características principales:**
+## 🎯 Acerca de
 
-- Generador de datos: Crea archivos de log simulados para diferentes misiones y dispositivos
-- Analizador de reportes: Procesa logs y genera estadísticas de estado de dispositivos
-- Gestión de backups: Archiva automáticamente los datos procesados
-- Dashboard TUI: Interfaz visual en terminal para monitoreo en tiempo real con Rich
+Apollo 11 es un sistema integral de simulación y monitoreo diseñado para misiones espaciales NASA. Construido con prácticas modernas de Python, proporciona capacidades de generación, análisis y reporte de datos de telemetría en tiempo real con una hermosa interfaz de usuario de terminal.
+
+**Desarrollado como parte del Python Bootcamp Challenge de Softserve**, este proyecto demuestra conceptos avanzados de Python incluyendo:
+
+- 🏗️ **Programación orientada a objetos** con clases y herencia
+- 📁 **Operaciones de archivos** y gestión de directorios
+- ⚙️ **Gestión de configuración** con YAML
+- 🧪 **Testing integral** (tests unitarios + property-based testing)
+- 🖥️ **Interfaz CLI** con parsing de argumentos
+- 📊 **Dashboard en tiempo real** con librería Rich
+
+El sistema simula escenarios del mundo real donde múltiples dispositivos en diferentes misiones espaciales generan datos de telemetría que necesitan ser recolectados, analizados y reportados en tiempo real.
+
+## ✨ Características
+
+Apollo 11 proporciona un conjunto completo de herramientas para el monitoreo de misiones espaciales:
+
+### 🔧 Componentes Principales
+
+- **📊 Generador de Datos**: Crea archivos de log simulados realistas para diferentes misiones y dispositivos
+- **📈 Analizador de Reportes**: Procesa logs y genera estadísticas completas de estado de dispositivos
+- **💾 Gestión de Backups**: Archiva automáticamente datos procesados con manejo inteligente de carpetas
+- **🖥️ Dashboard TUI**: Hermosa interfaz de terminal para monitoreo en tiempo real usando la librería Rich
+
+### 🚀 Capacidades Avanzadas
+
+- **Monitoreo en Tiempo Real**: Actualizaciones en vivo del estado del sistema y estadísticas de misiones
+- **Property-based Testing**: Validación robusta usando el framework Hypothesis
+- **Logging Centralizado**: Sistema de logging configurable en todos los módulos
+- **Alta Cobertura de Tests**: 98% de cobertura de tests con 45 tests integrales
+- **CLI Profesional**: Sistema completo de parsing de argumentos con validación y ayuda
 
 ## Instalación
 
