@@ -107,9 +107,15 @@ class TestDashboard:
         # Verify the layout is properly structured
         assert isinstance(layout, Layout)
 
-        # Convert layout to string to check content
-        console_output = dashboard.console.render(layout)
-        layout_str = str(console_output)
+        # Convert layout to string to check content using Rich's capture method
+        from rich.console import Console
+        from io import StringIO
+        
+        # Create a string buffer to capture the rendered output
+        string_buffer = StringIO()
+        capture_console = Console(file=string_buffer, width=120)
+        capture_console.print(layout)
+        layout_str = string_buffer.getvalue()
 
         # Property: Dashboard must show files generated count
         assert str(files_generated) in layout_str
