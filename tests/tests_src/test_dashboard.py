@@ -2,7 +2,7 @@
 
 import pytest
 from datetime import datetime
-from hypothesis import given, strategies as st
+from hypothesis import given, strategies as st, settings, HealthCheck
 from rich.layout import Layout
 
 from apolo_11.src.dashboard import Dashboard, DashboardStats, MissionStats
@@ -61,6 +61,7 @@ class TestDashboard:
         device_types=st.lists(st.text(min_size=1, max_size=10), min_size=0, max_size=3),
         device_counts=st.lists(st.integers(min_value=0, max_value=10), min_size=0, max_size=3)
     )
+    @settings(suppress_health_check=[HealthCheck.differing_executors], max_examples=100)
     def test_dashboard_content_completeness_property(self, files_generated, current_cycle, 
                                                    mission_names, device_types, device_counts):
         """
