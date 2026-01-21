@@ -73,13 +73,19 @@ def test_configuration_files_in_root():
         )
     
     # Check that configuration files are not in subdirectories
+    # Directories to ignore (build outputs, caches, etc.)
+    ignore_dirs = {'htmlcov', 'dist', 'build', '.pytest_cache', '.mypy_cache', 
+                   '.ruff_cache', '__pycache__', 'node_modules', '.hypothesis'}
+    
     for config_file in required_files + recommended_files:
         # Search for the file in subdirectories (excluding .git, node_modules, etc.)
         for found_file in project_root.rglob(config_file):
             if found_file.parent != project_root:
                 # Ignore files in hidden directories or common ignore patterns
                 relative_path = found_file.relative_to(project_root)
-                if not any(part.startswith('.') for part in relative_path.parts[:-1]):
+                # Check if any part of the path is in ignore_dirs or starts with '.'
+                if not any(part.startswith('.') or part in ignore_dirs 
+                          for part in relative_path.parts[:-1]):
                     pytest.fail(
                         f"Configuration file {config_file} found in subdirectory: "
                         f"{found_file.relative_to(project_root)}"
