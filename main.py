@@ -45,22 +45,38 @@ def main():
     parser = argparse.ArgumentParser(
         description='Generate files and generate reports for the Apolo 11 mission'
     )
+    
+    # Cache config values to avoid repeated dictionary lookups
+    general_config = config_data['general']
+    default_time_cycle = general_config['time_cycle']
+    
     parser.add_argument('--num_files_min', type=int,
-                        default=config_data['general']['num_files_initial'],
+                        default=general_config['num_files_initial'],
                         help='Minimum number of files to generate')
     parser.add_argument('--num_files_max', type=int,
-                        default=config_data['general']['num_files_final'],
+                        default=general_config['num_files_final'],
                         help='Maximum number of files to generate')
     parser.add_argument('--generator_interval', type=int,
-                        default=config_data['general']['time_cycle'],
+                        default=default_time_cycle,
                         help='Time interval in seconds for the generator')
     parser.add_argument('--reporter_interval', type=int,
-                        default=config_data['general']['time_cycle'] * 3,
+                        default=default_time_cycle * 3,
                         help='Time interval in seconds for the reporter')
     parser.add_argument('--dashboard', action='store_true',
                         help='Enable dashboard TUI for real-time monitoring')
-
     args = parser.parse_args()
+    
+    # Validate arguments
+    if args.num_files_min <= 0:
+        parser.error('--num_files_min must be a positive integer')
+    if args.num_files_max <= 0:
+        parser.error('--num_files_max must be a positive integer')
+    if args.num_files_min > args.num_files_max:
+        parser.error('--num_files_min cannot be greater than --num_files_max')
+    if args.generator_interval <= 0:
+        parser.error('--generator_interval must be a positive integer')
+    if args.reporter_interval <= 0:
+        parser.error('--reporter_interval must be a positive integer')
 
     if args.reporter_interval <= args.generator_interval:
         logger.error("El intervalo de reportes debe ser mayor que el intervalo de generadores.")
