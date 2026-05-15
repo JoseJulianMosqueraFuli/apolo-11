@@ -81,12 +81,14 @@ class TestAsyncMain:
     @pytest.mark.asyncio
     async def test_async_main_runs_tasks_and_stops(self):
         with patch('apolo_11.cli.ConfigManager.read_yaml_config',
-                   return_value={'general': {'num_files_initial': 1, 'num_files_final': 100,
-                                              'time_cycle': 20},
-                                  'missions': {'codes': {}, 'names': []},
-                                  'devices': {'types': [], 'status': []},
-                                  'date_format': '%d%m%y%H%M%S',
-                                  'routes': {'devices': '/tmp', 'backups': '/tmp', 'results': '/tmp'}}):
+                   return_value={
+                       'general': {'num_files_initial': 1, 'num_files_final': 100,
+                                   'time_cycle': 20},
+                       'missions': {'codes': {}, 'names': []},
+                       'devices': {'types': [], 'status': []},
+                       'date_format': '%d%m%y%H%M%S',
+                       'routes': {'devices': '/tmp', 'backups': '/tmp', 'results': '/tmp'},
+                   }):
             with patch('apolo_11.cli.setup_logging'), \
                  patch('apolo_11.src.generator.Generator') as mock_gen, \
                  patch('apolo_11.src.reporter.Reporter'), \
