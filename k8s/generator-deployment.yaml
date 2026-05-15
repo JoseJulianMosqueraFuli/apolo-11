@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apolo-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apolo-generator
+  template:
+    metadata:
+      labels:
+        app: apolo-generator
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: apolo-generator
+          image: apolo-11:latest
+          imagePullPolicy: Always
+          args: ["--mode", "generator", "--generator_interval", "3", "--reporter_interval", "10"]
+          env:
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-auth
+                  key: username
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-auth
+                  key: password
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          volumeMounts:
+            - name: config
+              mountPath: /app/apolo_11/config/config.yaml
+              subPath: config.yaml
+            - name: results
+              mountPath: /data/results
+            - name: tmp
+              mountPath: /tmp
+            - name: poetry-cache
+              mountPath: /home/apolo/.cache
+      volumes:
+        - name: config
+          configMap:
+            name: apolo-config
+        - name: results
+          persistentVolumeClaim:
+            claimName: apolo-results
+        - name: tmp
+          emptyDir: {}
+        - name: poetry-cache
+          emptyDir: {}
