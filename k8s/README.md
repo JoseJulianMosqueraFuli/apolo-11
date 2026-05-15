@@ -60,6 +60,7 @@ Then access:
 | `apolo-deployment.yaml`   | Deployment    | apolo-11 with TUI + Web dashboard      |
 | `apolo-service.yaml`      | Service       | Exposes web dashboard (port 8000)      |
 | `apolo-pdb.yaml`          | PodDisruptionBudget | Limits voluntary disruptions to 0 |
+| `apolo-hpa.yaml`          | HorizontalPodAutoscaler | Scales 1-3 replicas by CPU/memory |
 | `rabbitmq-ingress.yaml`   | Ingress       | Routes apolo.local and rabbitmq.local  |
 
 ## Architecture
