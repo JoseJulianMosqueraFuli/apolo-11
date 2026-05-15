@@ -82,21 +82,22 @@ class TestAsyncMain:
     async def test_async_main_runs_tasks_and_stops(self):
         with patch('apolo_11.cli.ConfigManager.read_yaml_config',
                    return_value={'general': {'num_files_initial': 1, 'num_files_final': 100,
-                                             'time_cycle': 20},
-                                 'missions': {'codes': {}, 'names': []},
-                                 'devices': {'types': [], 'status': []},
-                                 'date_format': '%d%m%y%H%M%S',
-                                 'routes': {'devices': '/tmp', 'backups': '/tmp', 'results': '/tmp'}}):
+                                              'time_cycle': 20},
+                                  'missions': {'codes': {}, 'names': []},
+                                  'devices': {'types': [], 'status': []},
+                                  'date_format': '%d%m%y%H%M%S',
+                                  'routes': {'devices': '/tmp', 'backups': '/tmp', 'results': '/tmp'}}):
             with patch('apolo_11.cli.setup_logging'), \
                  patch('apolo_11.src.generator.Generator') as mock_gen, \
                  patch('apolo_11.src.reporter.Reporter'), \
-                 patch('apolo_11.cli.Dashboard'):
+                 patch('apolo_11.cli.Dashboard'), \
+                 patch('apolo_11.cli.WebDashboard'):
                 from apolo_11.cli import _async_main
                 with patch('sys.argv', ['apolo', '--generator_interval', '3',
                                         '--reporter_interval', '6',
                                         '--num_files_min', '1',
                                         '--num_files_max', '5']):
-                    with pytest.raises(TimeoutError):
+                    with pytest.raises(asyncio.TimeoutError):
                         await asyncio.wait_for(_async_main(), timeout=0.5)
                     mock_gen.return_value.generate_device_folder.assert_called_once()
 
@@ -167,12 +168,12 @@ class TestRunReporter:
         rep.mission_stats.return_value = {}
         rep.last_report_time = None
         dashboard = MagicMock()
-        args = MagicMock(num_files_min=1, num_files_max=5, reporter_interval=0)
+        args = MagicMock(num_files_min=1, num_files_max=5, reporter_interval=0.01)
         config_data = {'routes': {'devices': '/tmp/devices', 'backups': '/tmp/backups'}}
         stop = asyncio.Event()
 
         async def schedule_stop():
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.3)
             stop.set()
 
         await asyncio.gather(
