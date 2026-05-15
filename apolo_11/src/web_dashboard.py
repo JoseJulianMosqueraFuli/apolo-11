@@ -139,6 +139,11 @@ class WebDashboard:
             with self._lock:
                 return self._stats_to_dict()
 
+        @self.app.get("/metrics")
+        async def metrics():
+            with self._lock:
+                return self._render_prometheus_metrics(), 200, {"Content-Type": "text/plain"}
+
         @self.app.get("/", response_class=HTMLResponse)
         async def index():
             with self._lock:
@@ -240,3 +245,38 @@ class WebDashboard:
         if self._server:
             self._server.should_exit = True
             logger.info("Web dashboard stopped")
+
+    def _render_prometheus_metrics(self) -> str:
+        lines = []
+        lines.append("# HELP apolo_files_generated_total Total files generated")
+        lines.append("# TYPE apolo_files_generated_total counter")
+        lines.append(f"apolo_files_generated_total {self.stats.files_generated}")
+        lines.append("")
+        lines.append("# HELP apolo_current_cycle Current generation cycle number")
+        lines.append("# TYPE apolo_current_cycle gauge")
+        lines.append(f"apolo_current_cycle {self.stats.current_cycle}")
+        lines.append("")
+        lines.append("# HELP apolo_missions_total Number of active missions")
+        lines.append("# TYPE apolo_missions_total gauge")
+        lines.append(f"apolo_missions_total {len(self.stats.missions)}")
+        lines.append("")
+
+        for mission_name, ms in self.stats.missions.items():
+            for status, count in ms.status_counts.items():
+                safe_name = mission_name.lower().replace(" ", "_")
+                lines.append("# HELP apolo_device_status_count Device count by mission and status")
+                lines.append("# TYPE apolo_device_status_count gauge")
+                lines.append(
+                    f'apolo_device_status_count{{mission="{safe_name}",status="{status}"}} {count}'
+                )
+            for dtype, count in ms.device_counts.items():
+                safe_name = mission_name.lower().replace(" ", "_")
+                safe_type = dtype.lower().replace(" ", "_")
+                lines.append("# HELP apolo_device_type_count Device count by mission and type")
+                lines.append("# TYPE apolo_device_type_count gauge")
+                lines.append(
+                    f'apolo_device_type_count{{mission="{safe_name}",type="{safe_type}"}} {count}'
+                )
+
+        lines.append("")
+        return "\n".join(lines)
