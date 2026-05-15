@@ -21,7 +21,7 @@ services:
           cpus: "0.1"
           memory: 128M
 
-  apolo-11:
+  generator:
     build: .
     depends_on:
       rabbitmq:
@@ -32,6 +32,7 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
     volumes:
       - ./apolo_11/results:/data/results
+    command: ["--mode", "generator", "--generator_interval", "3", "--reporter_interval", "10"]
     deploy:
       resources:
         limits:
@@ -40,3 +41,73 @@ services:
         reservations:
           cpus: "0.1"
           memory: 128M
+
+  reporter:
+    build: .
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    volumes:
+      - ./apolo_11/results:/data/results
+    ports:
+      - "8000:8000"
+    command: ["--mode", "reporter", "--api", "--api-port", "8000", "--generator_interval", "3", "--reporter_interval", "10"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 256M
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+
+volumes:
+  prometheus-data:
+  grafana-data:

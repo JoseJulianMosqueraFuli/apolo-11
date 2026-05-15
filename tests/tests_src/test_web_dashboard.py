@@ -110,3 +110,53 @@ class TestLifecycle:
 
     def test_stop_without_start(self, web_dashboard):
         web_dashboard.stop()
+
+
+class TestPrometheusMetrics:
+    def test_metrics_empty(self, web_dashboard):
+        output = web_dashboard._render_prometheus_metrics()
+        assert "apolo_files_generated_total 0" in output
+        assert "apolo_current_cycle 0" in output
+        assert "apolo_missions_total 0" in output
+
+    def test_metrics_with_data(self, web_dashboard):
+        gen_stats = {'files_count': 50, 'cycle': 7}
+        rep_stats = {
+            'missions': {
+                'Mars One': {
+                    'device_counts': {'Rover': 3},
+                    'status_counts': {'good': 2, 'excellent': 1}
+                }
+            },
+            'last_report_time': datetime(2026, 5, 14, 12, 0, 0)
+        }
+        web_dashboard.update_stats(gen_stats, rep_stats)
+        output = web_dashboard._render_prometheus_metrics()
+        assert "apolo_files_generated_total 50" in output
+        assert "apolo_current_cycle 7" in output
+        assert 'apolo_missions_total 1' in output
+        assert 'apolo_device_status_count{mission="mars_one",status="good"} 2' in output
+        assert 'apolo_device_type_count{mission="mars_one",type="rover"} 3' in output
+
+    def test_metrics_multiple_missions(self, web_dashboard):
+        gen_stats = {'files_count': 100, 'cycle': 10}
+        rep_stats = {
+            'missions': {
+                'Alpha': {
+                    'device_counts': {'Sensor': 5},
+                    'status_counts': {'warning': 3, 'faulty': 2}
+                },
+                'Beta': {
+                    'device_counts': {'Camera': 2},
+                    'status_counts': {'excellent': 2}
+                }
+            },
+            'last_report_time': None
+        }
+        web_dashboard.update_stats(gen_stats, rep_stats)
+        output = web_dashboard._render_prometheus_metrics()
+        assert 'apolo_missions_total 2' in output
+        assert 'apolo_device_status_count{mission="alpha",status="warning"} 3' in output
+        assert 'apolo_device_status_count{mission="beta",status="excellent"} 2' in output
+        assert 'apolo_device_type_count{mission="alpha",type="sensor"} 5' in output
+        assert 'apolo_device_type_count{mission="beta",type="camera"} 2' in output
