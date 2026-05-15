@@ -12,7 +12,10 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: apolo-11
+              app: apolo-generator
+        - podSelector:
+            matchLabels:
+              app: apolo-reporter
       ports:
         - protocol: TCP
           port: 5672
