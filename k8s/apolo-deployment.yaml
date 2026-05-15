@@ -16,9 +16,13 @@ spec:
         - name: apolo-11
           image: apolo-11:latest
           imagePullPolicy: IfNotPresent
+          args: ["--dashboard", "--api", "--api-port", "8000", "--generator_interval", "3", "--reporter_interval", "10"]
           env:
             - name: RABBITMQ_HOST
               value: rabbitmq
+          ports:
+            - containerPort: 8000
+              name: http
           volumeMounts:
             - name: config
               mountPath: /app/apolo_11/config/config.yaml

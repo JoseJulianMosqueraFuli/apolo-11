@@ -117,7 +117,7 @@ class TestRunGenerator:
             stop.set()
 
         await asyncio.gather(
-            _run_generator(gen, rep, args, dashboard, stop),
+            _run_generator(gen, rep, args, [dashboard], stop),
             schedule_stop(),
         )
 
@@ -134,7 +134,7 @@ class TestRunGenerator:
         stop = asyncio.Event()
         stop.set()
 
-        await _run_generator(gen, rep, MagicMock(), dashboard, stop)
+        await _run_generator(gen, rep, MagicMock(), [dashboard], stop)
 
         gen.generate_files.assert_not_called()
 
@@ -151,7 +151,7 @@ class TestRunGenerator:
             stop.set()
 
         await asyncio.gather(
-            _run_generator(gen, rep, args, None, stop),
+            _run_generator(gen, rep, args, [], stop),
             schedule_stop(),
         )
 
@@ -176,7 +176,7 @@ class TestRunReporter:
             stop.set()
 
         await asyncio.gather(
-            _run_reporter(gen, rep, args, dashboard, config_data, stop),
+            _run_reporter(gen, rep, args, [dashboard], config_data, stop),
             schedule_stop(),
         )
 
@@ -194,6 +194,6 @@ class TestRunReporter:
         stop = asyncio.Event()
         stop.set()
 
-        await _run_reporter(gen, rep, args, dashboard, {}, stop)
+        await _run_reporter(gen, rep, args, [dashboard], {}, stop)
 
         rep.process_files.assert_not_called()
