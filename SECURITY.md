@@ -1,158 +1,82 @@
-# Security — Pending Improvements
+# Security — Improvements
 
-Below are identified security gaps and planned improvements for the Kubernetes deployment. Each item includes priority, effort, and impact.
+All identified security improvements for the Kubernetes deployment have been implemented.
 
 ## Critical
 
-### 1. Run container as non-root user
+### 1. Run container as non-root user ✅
 
-**Problem:** `python:3.12-slim` runs as `root` by default. If the container is compromised, an attacker has full host access via container escape.
+**Dockerfile:** system user/group `apolo` with `USER apolo` before ENTRYPOINT.
 
-**Fix in `Dockerfile`:**
-```dockerfile
-RUN addgroup --system apolo && adduser --system --ingroup apolo apolo
-USER apolo
-```
+**Kubernetes:** `runAsNonRoot: true`, `runAsUser: 1001`, `runAsGroup: 1001`, `allowPrivilegeEscalation: false`, `capabilities.drop: [ALL]`, `readOnlyRootFilesystem: true`.
 
-**Fix in `k8s/apolo-deployment.yaml`:**
-```yaml
-securityContext:
-  runAsNonRoot: true
-  runAsUser: 1001
-  runAsGroup: 1001
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop: ["ALL"]
-  readOnlyRootFilesystem: true
-```
+### 2. RabbitMQ credentials in Secret ✅
 
-### 2. RabbitMQ credentials in Secret
+Credentials managed via `k8s/rabbitmq-secret.yaml` and referenced via `secretKeyRef` in both Deployment and StatefulSet.
 
-**Problem:** Username and password are hardcoded in `rabbitmq-statefulset.yaml`.
+### 3. Resource limits ✅
 
-**Fix:** Create a Secret and reference it:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: rabbitmq-auth
-type: Opaque
-stringData:
-  username: guest
-  password: guest  # TODO: rotate before production
-```
-
-Then in the StatefulSet:
-```yaml
-env:
-  - name: RABBITMQ_DEFAULT_USER
-    valueFrom:
-      secretKeyRef:
-        name: rabbitmq-auth
-        key: username
-  - name: RABBITMQ_DEFAULT_PASS
-    valueFrom:
-      secretKeyRef:
-        name: rabbitmq-auth
-        key: password
-```
-
-### 3. Resource limits
-
-**Problem:** No CPU/memory limits set. A runaway process can starve the node.
-
-**Fix in `k8s/apolo-deployment.yaml` and `rabbitmq-statefulset.yaml`:**
-```yaml
-resources:
-  requests:
-    cpu: "100m"
-    memory: "128Mi"
-  limits:
-    cpu: "500m"
-    memory: "256Mi"
-```
+CPU/memory requests and limits on both `apolo-11` Deployment and `rabbitmq` StatefulSet.
 
 ## High
 
-### 4. Liveness and readiness probes
+### 4. Liveness and readiness probes ✅
 
-**Problem:** If the application hangs, Kubernetes has no way to detect it and restart the pod.
+HTTP probes against `/api/stats` with appropriate delays and thresholds.
 
-**Fix in `k8s/apolo-deployment.yaml`:**
-```yaml
-livenessProbe:
-  httpGet:
-    path: /api/stats
-    port: 8000
-  initialDelaySeconds: 10
-  periodSeconds: 10
-readinessProbe:
-  httpGet:
-    path: /api/stats
-    port: 8000
-  initialDelaySeconds: 5
-  periodSeconds: 5
-```
+### 5. Container image vulnerability scanning ✅
 
-### 5. Container image vulnerability scanning
-
-**Problem:** No automated scanning for CVEs in the container image.
-
-**Proposed CI integration:**
-```yaml
-- name: Scan image for vulnerabilities
-  uses: aquasecurity/trivy-action@master
-  with:
-    image-ref: apolo-11:latest
-    format: table
-    exit-code: 1
-    severity: CRITICAL,HIGH
-```
+Trivy scan in CI pipeline blocking CRITICAL and HIGH severity CVEs.
 
 ## Medium
 
-### 6. Network policies
+### 6. Network policies ✅
 
-**Problem:** Any pod in the namespace can communicate with any other pod. No network isolation between apolo-11 and RabbitMQ.
+`k8s/rabbitmq-network-policy.yaml` restricts ingress to RabbitMQ from `app=apolo-11` pods only on ports 5672 and 15672.
 
-**Fix:** Create a NetworkPolicy that only allows apolo-11 to talk to RabbitMQ on port 5672.
+### 7. PodDisruptionBudget ✅
 
-### 7. PodDisruptionBudget
+`k8s/apolo-pdb.yaml` with `maxUnavailable: 0` to prevent voluntary disruptions.
 
-**Problem:** Without a PDB, voluntary disruptions (node drain, etc.) can take down all replicas.
+### 8. Seccomp profile ✅
 
-### 8. Seccomp / AppArmor profile
-
-**Problem:** No seccomp profile restricts system calls available to the container.
+`seccompProfile.type: RuntimeDefault` applied at both pod and container level for Deployment and StatefulSet.
 
 ## Low
 
-### 9. ImagePullPolicy
+### 9. ImagePullPolicy ✅
 
-`IfNotPresent` is acceptable for local development but should be `Always` in production to ensure fresh images.
+Set to `Always` in both Deployment and StatefulSet to ensure fresh images in production.
 
-### 10. HorizontalPodAutoscaler
+### 10. HorizontalPodAutoscaler ✅
 
-No autoscaling configured. Could add HPA based on CPU/memory metrics for the web dashboard.
+`k8s/apolo-hpa.yaml` scales 1–3 replicas based on CPU (70%) and memory (80%) utilization.
 
 ## Priority Matrix
 
-| Item | Priority | Effort | Impact |
-|------|----------|--------|--------|
-| Non-root user | Critical | Low | High |
-| RabbitMQ Secret | Critical | Low | High |
-| Resource limits | Critical | Low | High |
-| Probes | High | Low | High |
-| Image scanning | High | Medium | Medium |
-| NetworkPolicy | Medium | Medium | Medium |
-| PodDisruptionBudget | Medium | Low | Medium |
-| Seccomp | Medium | Medium | Medium |
-| ImagePullPolicy | Low | Low | Low |
-| HPA | Low | Medium | Low |
+| Item | Priority | Effort | Impact | Status |
+|------|----------|--------|--------|--------|
+| Non-root user | Critical | Low | High | ✅ Done |
+| RabbitMQ Secret | Critical | Low | High | ✅ Done |
+| Resource limits | Critical | Low | High | ✅ Done |
+| Probes | High | Low | High | ✅ Done |
+| Image scanning | High | Medium | Medium | ✅ Done |
+| NetworkPolicy | Medium | Medium | Medium | ✅ Done |
+| PodDisruptionBudget | Medium | Low | Medium | ✅ Done |
+| Seccomp | Medium | Medium | Medium | ✅ Done |
+| ImagePullPolicy | Low | Low | Low | ✅ Done |
+| HPA | Low | Medium | Low | ✅ Done |
 
-## Timeline
+## Docker Compose
 
-1. **Short term** (next sprint): Items 1–4 (critical + probes)
-2. **Medium term** (next month): Items 5–6 (image scanning + network policy)
-3. **Long term**: Items 7–10
+`docker-compose.yml` also updated with:
+- Resource limits via `deploy.resources`
+- Credentials via environment variables (`.env` file recommended)
+- Consistent volume mount paths with K8s (`/data/results`)
+
+## Remaining Considerations
+
+- **Secret rotation**: The `rabbitmq-auth` Secret uses `stringData` with plaintext values. For production, use an external secrets manager (Vault, AWS Secrets Manager, etc.) or `externalSecrets` operator.
+- **TLS/Ingress**: The Ingress does not include TLS configuration. Add TLS termination with cert-manager for production.
+- **Audit logging**: Enable Kubernetes audit logging to track security-relevant events.
+- **Pod Security Standards**: Consider enforcing `restricted` Pod Security Standard at the namespace level.
