@@ -31,6 +31,7 @@ _A professional simulation and monitoring system for NASA space missions_
 - [Architecture](#-architecture)
 - [Testing](#-testing)
 - [Configuration](#-configuration)
+- [Security](#-security)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -465,6 +466,7 @@ External consumers can subscribe to `apolo.generated` for real-time monitoring, 
 
 - ✅ **Web Dashboard**: FastAPI with auto-refresh HTML, JSON API, and Swagger docs
 - ✅ **Kubernetes**: Service + Ingress for web dashboard and RabbitMQ
+- ✅ **CI Manifest Validation**: Kubeconform validates all k8s manifests in CI
 - ✅ **Architecture**: Eliminated side-effect imports — no IO at module load time
 - ✅ **Dependency Injection**: All components accept optional config, testable without mocks
 - ✅ **Config Stability**: Routes changed from fragile list indices to dict keys
@@ -475,6 +477,18 @@ External consumers can subscribe to `apolo.generated` for real-time monitoring, 
 - ✅ **Logging**: No longer stomps on root logger — safe as a library
 - ✅ **SIGTERM Handling**: Graceful shutdown on kill signal
 - 🔄 **Future**: Web dashboard with WebSocket real-time updates
+
+## 🔒 Security
+
+See [`SECURITY.md`](SECURITY.md) for the planned security hardening roadmap, including:
+
+- 🛡️ Running containers as non-root
+- 🔑 RabbitMQ credentials in Kubernetes Secrets
+- 📊 Resource limits and probes
+- 🔍 Container image vulnerability scanning
+- 🚧 Network policies and PodDisruptionBudget
+
+Contributions to improve security are welcome!
 
 ## 🤝 Contributing
 
