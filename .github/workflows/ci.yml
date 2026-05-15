@@ -72,8 +72,6 @@ jobs:
           exit-code: 1
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          ignore-unfixed: true
-          ignore-unfixed: true
 
   k8s-validate:
     runs-on: ubuntu-latest
