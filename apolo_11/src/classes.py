@@ -1,75 +1,35 @@
-from typing import List, Dict
 from .config import ConfigManager
 
 
-config: dict = ConfigManager.read_yaml_config()
-
-
 class Configurable:
-    def __init__(self, config_key):
+    def __init__(self, config_key: str, config_data: dict | None = None):
         self._config_key = config_key
-        self._load_config()
-
-    def _load_config(self):
-        self._config_data = config[self._config_key]
+        if config_data is None:
+            config_data = ConfigManager.read_yaml_config()
+        self._config_data = config_data[self._config_key]
 
 
 class Mission(Configurable):
-    """
-    A class representing a mission
-
-    Attributes:
-        _name (list): list of mission names
-        _codes (dict): dictionary (config file) mapping mission names to their codes
-    """
-    def __init__(self):
-        """
-        Initialize a Mission object
-        Reads mission names and codes from the configuration file
-        """
-        super().__init__('missions')
+    def __init__(self, config_data: dict | None = None):
+        super().__init__('missions', config_data=config_data)
 
     @property
-    def codes(self) -> Dict[str, str]:
-        """
-        Get the mission codes
-        Returns:
-        dictionary mapping mission name to code
-        """
+    def codes(self) -> dict[str, str]:
         return self._config_data['codes']
 
     @property
-    def name(self) -> List[str]:
-        """
-        Get list of mission name
-
-        Returns:
-        list of mission names
-        """
+    def name(self) -> list[str]:
         return self._config_data['names']
 
 
 class Device(Configurable):
-    """
-    A class representing a device
-
-    Attributes:
-        _type (list): list of device types
-        _status (list): list of device statuses
-    """
-    def __init__(self):
-        super().__init__('devices')
+    def __init__(self, config_data: dict | None = None):
+        super().__init__('devices', config_data=config_data)
 
     @property
-    def type(self) -> List[str]:
-        """
-        Get list of device type
-        """
+    def type(self) -> list[str]:
         return self._config_data['types']
 
     @property
-    def status(self) -> List[str]:
-        """
-        Get list of device status
-        """
+    def status(self) -> list[str]:
         return self._config_data['status']

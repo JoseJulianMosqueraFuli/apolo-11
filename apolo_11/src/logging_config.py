@@ -34,8 +34,9 @@ def setup_logging(config_path: Optional[str] = None) -> logging.Logger:
         # Get logging configuration with defaults
         logging_config = config.get('logging', {})
         log_level = logging_config.get('level', 'INFO')
-        log_format = logging_config.get('format', 
-                                       '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        log_format = logging_config.get(
+            'format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
 
         # Configure root logger
         logging.basicConfig(

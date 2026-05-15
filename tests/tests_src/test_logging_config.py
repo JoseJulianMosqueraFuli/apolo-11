@@ -10,12 +10,9 @@ import re
 import tempfile
 import os
 from io import StringIO
-from unittest.mock import patch
 from hypothesis import given, strategies as st, settings, HealthCheck
-import pytest
 
 from apolo_11.src.logging_config import setup_logging, get_logger
-from apolo_11.src.config import ConfigManager
 
 
 class TestLoggingConfig:
@@ -80,38 +77,38 @@ routes:
         try:
             # Setup logging with the temporary config
             logger = setup_logging(temp_config_path)
-            
+
             # Create a string buffer to capture log output
             log_capture = StringIO()
             handler = logging.StreamHandler(log_capture)
-            
+
             # Set the same format as configured
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
-            
+
             # Add handler to the logger
             logger.addHandler(handler)
             logger.setLevel(logging.INFO)
-            
+
             # Log the test message
             logger.info(log_message)
-            
+
             # Get the logged output
             log_output = log_capture.getvalue().strip()
-            
+
             # Verify the format matches the expected pattern
             # Pattern: YYYY-MM-DD HH:MM:SS,mmm - logger_name - LEVEL - message
             expected_pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - apolo_11 - INFO - .*'
-            
+
             assert re.match(expected_pattern, log_output), f"Log format doesn't match expected pattern. Got: {log_output}"
-            
+
             # Verify the message is included in the output
             assert log_message in log_output, f"Log message '{log_message}' not found in output: {log_output}"
-            
+
             # Clean up handler
             logger.removeHandler(handler)
             handler.close()
-            
+
         finally:
             # Clean up temporary file
             os.unlink(temp_config_path)
@@ -164,6 +161,6 @@ routes:
             logger = setup_logging(temp_config_path)
             expected_level = getattr(logging, log_level)
             assert logger.level == expected_level
-            
+
         finally:
             os.unlink(temp_config_path)

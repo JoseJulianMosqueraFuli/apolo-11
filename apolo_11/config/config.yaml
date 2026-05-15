@@ -38,7 +38,7 @@ logging:
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 routes:
-  - results: ./apolo_11/results
-  - devices: ./apolo_11/results/devices
-  - backups: ./apolo_11/results/backups/
-  - reports: ./apolo_11/results/reports/
+  results: ./apolo_11/results
+  devices: ./apolo_11/results/devices
+  backups: ./apolo_11/results/backups/
+  reports: ./apolo_11/results/reports/

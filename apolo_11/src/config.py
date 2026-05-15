@@ -1,11 +1,9 @@
-from typing import Dict
-
 import yaml
 
 
 class ConfigManager:
     @staticmethod
-    def read_yaml_config(config_path: str = 'apolo_11/config/config.yaml') -> Dict:
+    def read_yaml_config(config_path: str = 'apolo_11/config/config.yaml') -> dict:
         """
         Read YAML config from file
 

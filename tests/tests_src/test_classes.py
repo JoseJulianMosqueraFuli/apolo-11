@@ -8,7 +8,7 @@ from apolo_11.src.classes import Mission, Device, Configurable
 def test_mission_class():
     # Cargar config real con ConfigManager
     config = ConfigManager.read_yaml_config()
-    
+
     # Crear una instancia de Mission
     mission_instance = Mission()
 
@@ -17,7 +17,7 @@ def test_mission_class():
 
     # Comparar Mission.codes contra config["missions"]["codes"]
     assert mission_instance.codes == config["missions"]["codes"]
-    
+
     # Comparar Mission.name contra config["missions"]["names"]
     assert mission_instance.name == config["missions"]["names"]
 
@@ -26,7 +26,7 @@ def test_mission_class():
 def test_device_class():
     # Cargar config real con ConfigManager
     config = ConfigManager.read_yaml_config()
-    
+
     # Crear una instancia de Device
     device_instance = Device()
 
@@ -35,14 +35,16 @@ def test_device_class():
 
     # Comparar Device.type contra config["devices"]["types"]
     assert device_instance.type == config["devices"]["types"]
-    
+
     # Comparar Device.status contra config["devices"]["status"]
     assert device_instance.status == config["devices"]["status"]
 
 # Test de borde: Verificar el manejo de una clave de configuración inexistente
+
+
 def test_configurable_class_invalid_key():
     with pytest.raises(KeyError):
-        invalid_key_instance = Configurable("invalid_key")
+        Configurable("invalid_key")
 
 
 @given(st.text().filter(lambda x: x not in ["missions", "devices", "general", "date_format", "routes"]))

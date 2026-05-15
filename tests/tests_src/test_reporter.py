@@ -1,7 +1,9 @@
 import os
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
+from hypothesis import given, strategies as st, settings
 from apolo_11.src.reporter import Reporter
+
 
 def test_process_files():
     with TemporaryDirectory() as tmp_dir:
@@ -20,6 +22,7 @@ def test_process_files():
         missions = [key[0] for key in reporter_instance.devices_reports.keys()]
         assert 'OrbitOne' in missions or 'ColonyMoon' in missions
 
+
 def generate_test_files(directory):
     # Crear archivos de prueba en el directorio dado
     # Puedes personalizar esto según sea necesario para tus pruebas
@@ -28,6 +31,7 @@ def generate_test_files(directory):
 
     with open(os.path.join(directory, 'file2.log'), 'w') as file:
         file.write("Date: 20220101130000\nMission: ColonyMoon\nDevice Type: Spaceship\nDevice Status: excellent\nHash: 456")
+
 
 def test_extract_value():
     reporter_instance = Reporter()
@@ -47,6 +51,7 @@ def test_extract_value():
 
     # Prueba de manejo de clave inexistente
     assert reporter_instance.extract_value(lines, "UnknownKey") == "unknown"
+
 
 def test_move_folders_to_backup():
     with TemporaryDirectory() as tmp_dir:
@@ -86,21 +91,21 @@ Mission: OrbitOne
 Device Type: Satellite
 Device Status: excellent
 Hash: 12345"""
-        
+
         with open(log_file_path, 'w') as f:
             f.write(log_content)
-        
+
         # Create reporter instance and process the file
         reporter_instance = Reporter()
         reporter_instance.process_file(log_file_path)
-        
+
         # Verify data extraction was correct
         assert len(reporter_instance.devices_reports) == 1
-        
+
         # Check that the correct mission and device type were extracted
         key = ('OrbitOne', 'Satellite')
         assert key in reporter_instance.devices_reports
-        
+
         # Check that the device status was correctly extracted
         assert reporter_instance.devices_reports[key] == ['excellent']
 
@@ -113,14 +118,14 @@ def test_process_file_with_missing_fields():
         log_content = """Date: 010123120000
 Mission: OrbitOne
 Hash: 12345"""
-        
+
         with open(log_file_path, 'w') as f:
             f.write(log_content)
-        
+
         # Create reporter instance and process the file
         reporter_instance = Reporter()
         reporter_instance.process_file(log_file_path)
-        
+
         # Verify that missing fields are handled with "unknown"
         key = ('OrbitOne', 'unknown')
         assert key in reporter_instance.devices_reports
@@ -134,56 +139,49 @@ def test_generate_stats_report(mock_datetime):
     Requirements: 5.3 - Test con datos de prueba, verificar formato del reporte
     """
     with TemporaryDirectory() as tmp_dir:
-        # Mock datetime for consistent filename
         mock_datetime.now.return_value.strftime.return_value = '010123120000'
-        
-        # Create reporter instance and add test data
-        reporter_instance = Reporter()
-        
-        # Add test data to devices_reports
+
+        reporter_instance = Reporter(config_data={
+            'routes': {'reports': tmp_dir},
+            'date_format': '%d%m%y%H%M%S'
+        })
         reporter_instance.devices_reports[('OrbitOne', 'Satellite')] = ['excellent', 'good', 'unknown']
         reporter_instance.devices_reports[('ColonyMoon', 'Spaceship')] = ['good', 'good']
-        
-        # Mock the config routes for reports directory
-        with patch('apolo_11.src.reporter.config', {
-            'routes': [None, None, None, {'reports': tmp_dir}],
-            'date_format': '%d%m%y%H%M%S'
-        }):
-            reporter_instance.generate_stats_report()
-        
+        reporter_instance.generate_stats_report()
+
         # Verify the report file was created
         expected_filename = 'APLSTATS-REPORT-010123120000.log'
         report_path = os.path.join(tmp_dir, expected_filename)
         assert os.path.exists(report_path)
-        
+
         # Read and verify report content
         with open(report_path, 'r') as f:
             content = f.read()
-        
+
         # Verify report sections are present
         assert 'Análisis de eventos:' in content
         assert 'Gestión de desconexiones:' in content
         assert 'Consolidación de misiones:' in content
         assert 'Cálculo de porcentajes:' in content
-        
+
         # Verify mission data is included
         assert 'Misión: OrbitOne' in content
         assert 'Misión: ColonyMoon' in content
         assert 'Tipo de Dispositivo: Satellite' in content
         assert 'Tipo de Dispositivo: Spaceship' in content
-        
+
         # Verify status counts
         assert 'Estado: excellent, Cantidad: 1' in content
         assert 'Estado: good, Cantidad: 2' in content or 'Estado: good, Cantidad: 1' in content
         assert 'Estado: unknown, Cantidad: 1' in content
-        
+
         # Verify disconnections section
         assert 'Desconexiones (unknown): 1' in content
         assert 'Desconexiones (unknown): 0' in content
-        
+
         # Verify consolidation section
         assert 'Total de dispositivos inoperables: 1' in content
-        
+
         # Verify percentage calculations are present
         assert 'Porcentaje:' in content
 
@@ -200,14 +198,14 @@ def test_process_file_malformed_log():
 No colons here
 Mission without colon OrbitOne
 Device Type Satellite"""
-        
+
         with open(log_file_path, 'w') as f:
             f.write(log_content)
-        
+
         # Create reporter instance and process the file
         reporter_instance = Reporter()
         reporter_instance.process_file(log_file_path)
-        
+
         # Verify that malformed data is handled with "unknown"
         key = ('unknown', 'unknown')
         assert key in reporter_instance.devices_reports
@@ -224,11 +222,11 @@ def test_process_file_empty_log():
         log_file_path = os.path.join(tmp_dir, 'empty.log')
         with open(log_file_path, 'w') as f:
             f.write('')
-        
+
         # Create reporter instance and process the file
         reporter_instance = Reporter()
         reporter_instance.process_file(log_file_path)
-        
+
         # Verify that empty file is handled with "unknown" values
         key = ('unknown', 'unknown')
         assert key in reporter_instance.devices_reports
@@ -246,13 +244,13 @@ def test_process_files_empty_directory():
         backup_dir = os.path.join(tmp_dir, 'backup')
         os.makedirs(input_dir)
         os.makedirs(backup_dir)
-        
+
         # Create reporter instance and process empty directory
         reporter_instance = Reporter()
-        
+
         # This should not raise an exception
         reporter_instance.process_files(input_dir, backup_dir)
-        
+
         # Verify no reports were generated (empty directory)
         assert len(reporter_instance.devices_reports) == 0
 
@@ -268,18 +266,18 @@ def test_process_files_directory_with_non_log_files():
         backup_dir = os.path.join(tmp_dir, 'backup')
         os.makedirs(input_dir)
         os.makedirs(backup_dir)
-        
+
         # Create non-log files
         with open(os.path.join(input_dir, 'readme.txt'), 'w') as f:
             f.write('This is not a log file')
-        
+
         with open(os.path.join(input_dir, 'config.json'), 'w') as f:
             f.write('{"key": "value"}')
-        
+
         # Create reporter instance and process directory
         reporter_instance = Reporter()
         reporter_instance.process_files(input_dir, backup_dir)
-        
+
         # Verify no reports were generated (no .log files)
         assert len(reporter_instance.devices_reports) == 0
 
@@ -290,39 +288,32 @@ def test_generate_stats_report_empty_data():
     Requirements: 5.4 - Edge case: sin datos para procesar
     """
     with TemporaryDirectory() as tmp_dir:
-        # Create reporter instance with no data
-        reporter_instance = Reporter()
-        
-        # Mock the config routes for reports directory
-        with patch('apolo_11.src.reporter.config', {
-            'routes': [None, None, None, {'reports': tmp_dir}],
-            'date_format': '%d%m%y%H%M%S'
-        }):
-            with patch('apolo_11.src.reporter.datetime') as mock_datetime:
-                mock_datetime.now.return_value.strftime.return_value = '010123120000'
-                reporter_instance.generate_stats_report()
-        
+        with patch('apolo_11.src.reporter.datetime') as mock_datetime:
+            mock_datetime.now.return_value.strftime.return_value = '010123120000'
+
+            reporter_instance = Reporter(config_data={
+                'routes': {'reports': tmp_dir},
+                'date_format': '%d%m%y%H%M%S'
+            })
+            reporter_instance.generate_stats_report()
+
         # Verify the report file was created even with no data
         expected_filename = 'APLSTATS-REPORT-010123120000.log'
         report_path = os.path.join(tmp_dir, expected_filename)
         assert os.path.exists(report_path)
-        
+
         # Read and verify report content contains headers but no data
         with open(report_path, 'r') as f:
             content = f.read()
-        
+
         # Verify report sections are present
         assert 'Análisis de eventos:' in content
         assert 'Gestión de desconexiones:' in content
         assert 'Consolidación de misiones:' in content
         assert 'Cálculo de porcentajes:' in content
-        
+
         # Verify consolidation shows 0 inoperable devices
         assert 'Total de dispositivos inoperables: 0' in content
-
-
-# Property-Based Tests
-from hypothesis import given, strategies as st, settings
 
 
 @given(
@@ -360,7 +351,6 @@ def test_move_folders_respects_parameters(source_suffix, backup_suffix):
         # Verify the source folder no longer exists
         original_source = os.path.join(source_dir, test_folder_name)
         assert not os.path.exists(original_source), f"Original folder should not exist at {original_source}"
-
 
 
 @given(

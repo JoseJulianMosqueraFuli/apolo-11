@@ -18,6 +18,7 @@ apolo_11/src/cycle_number.txt
 # Coverage reports
 .coverage
 htmlcov/
+.kiro/
 
 # Generated reports and results
 apolo_11/results/

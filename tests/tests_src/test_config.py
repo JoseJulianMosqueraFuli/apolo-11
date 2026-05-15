@@ -54,11 +54,13 @@ def test_read_yaml_config(setup_test_environment):
     assert "date_format" in config_data
     assert "routes" in config_data
 
+
 def test_read_yaml_config_file_not_found():
     config_manager = ConfigManager()
 
     with pytest.raises(FileNotFoundError):
-        config_data = config_manager.read_yaml_config("nonexistent.yaml")
+        config_manager.read_yaml_config("nonexistent.yaml")
+
 
 def test_read_yaml_config_empty_file(setup_test_environment):
     tmpdir = setup_test_environment

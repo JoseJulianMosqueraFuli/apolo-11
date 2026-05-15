@@ -1,6 +1,5 @@
 """Tests for the dashboard module."""
 
-import pytest
 from datetime import datetime
 from hypothesis import given, strategies as st, settings, HealthCheck
 from rich.layout import Layout
@@ -62,8 +61,8 @@ class TestDashboard:
         device_counts=st.lists(st.integers(min_value=0, max_value=10), min_size=0, max_size=3)
     )
     @settings(suppress_health_check=[HealthCheck.differing_executors], max_examples=100)
-    def test_dashboard_content_completeness_property(self, files_generated, current_cycle, 
-                                                   mission_names, device_types, device_counts):
+    def test_dashboard_content_completeness_property(self, files_generated, current_cycle,
+                                                     mission_names, device_types, device_counts):
         """
         Feature: apolo-11-improvements, Property 4: Dashboard muestra información completa
         Validates: Requirements 6.1, 6.2, 6.3
@@ -111,7 +110,7 @@ class TestDashboard:
         # Convert layout to string to check content using Rich's capture method
         from rich.console import Console
         from io import StringIO
-        
+
         # Create a string buffer to capture the rendered output
         string_buffer = StringIO()
         capture_console = Console(file=string_buffer, width=120)
@@ -125,8 +124,8 @@ class TestDashboard:
         assert str(current_cycle) in layout_str
 
         # Property: Dashboard must show last report status (either timestamp or "N/A")
-        assert ("Last Report" in layout_str and 
-                (datetime.now().strftime("%Y-%m-%d") in layout_str or "N/A" in layout_str))
+        assert ("Last Report" in layout_str
+                and (datetime.now().strftime("%Y-%m-%d") in layout_str or "N/A" in layout_str))
 
         # Property: Dashboard must show mission information when missions exist
         if missions:
@@ -145,7 +144,7 @@ class TestDashboard:
         live = dashboard.start_live_display()
         assert live is not None
         assert dashboard._live is not None
-        
+
         # Stop live display
         dashboard.stop_display()
         assert dashboard._live is None

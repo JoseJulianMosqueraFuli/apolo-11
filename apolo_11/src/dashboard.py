@@ -1,8 +1,7 @@
 """Dashboard module for Apollo 11 system monitoring."""
 
-import time
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any
 from dataclasses import dataclass
 
 from rich.console import Console
@@ -22,8 +21,8 @@ logger = get_logger(__name__)
 class MissionStats:
     """Statistics for a specific mission."""
     name: str
-    device_counts: Dict[str, int]  # device_type -> count
-    status_counts: Dict[str, int]  # status -> count
+    device_counts: dict[str, int]
+    status_counts: dict[str, int]
 
 
 @dataclass
@@ -31,8 +30,8 @@ class DashboardStats:
     """Complete dashboard statistics."""
     files_generated: int
     current_cycle: int
-    missions: Dict[str, MissionStats]
-    last_report_time: Optional[datetime]
+    missions: dict[str, MissionStats]
+    last_report_time: datetime | None
 
 
 class Dashboard:
@@ -48,7 +47,7 @@ class Dashboard:
         )
         self._live = None
 
-    def update_stats(self, generator_stats: Dict[str, Any], reporter_stats: Dict[str, Any]) -> None:
+    def update_stats(self, generator_stats: dict[str, Any], reporter_stats: dict[str, Any]) -> None:
         """Update dashboard statistics.
 
         Args:
