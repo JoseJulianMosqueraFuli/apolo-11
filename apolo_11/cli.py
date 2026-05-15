@@ -80,9 +80,9 @@ async def _run_generator(gen: generator.Generator, rep: reporter.Reporter,
                 d.update_display()
 
         try:
-            await asyncio.wait_for(stop.wait(), timeout=args.generator_interval)
-        except TimeoutError:
-            pass
+            await asyncio.sleep(args.generator_interval)
+        except asyncio.CancelledError:
+            break
 
 
 async def _run_reporter(gen: generator.Generator, rep: reporter.Reporter,
@@ -90,9 +90,9 @@ async def _run_reporter(gen: generator.Generator, rep: reporter.Reporter,
                         config_data: dict, stop: asyncio.Event):
     while not stop.is_set():
         try:
-            await asyncio.wait_for(stop.wait(), timeout=args.reporter_interval)
-        except (TimeoutError, asyncio.CancelledError):
-            pass
+            await asyncio.sleep(args.reporter_interval)
+        except asyncio.CancelledError:
+            break
         if stop.is_set():
             break
 
