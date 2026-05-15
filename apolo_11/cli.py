@@ -1,6 +1,6 @@
 import argparse
+import asyncio
 import signal
-import time
 from contextlib import nullcontext
 
 from apolo_11.src import generator, reporter
@@ -9,12 +9,7 @@ from apolo_11.src.logging_config import setup_logging
 from apolo_11.src.dashboard import Dashboard
 
 
-def main():
-    signal.signal(signal.SIGTERM, lambda sig, frame: exit(0))
-
-    logger = setup_logging()
-    config_data = ConfigManager.read_yaml_config()
-
+def _parse_args(config_data: dict) -> argparse.Namespace | None:
     parser = argparse.ArgumentParser(
         description='Generate files and generate reports for the Apolo 11 mission'
     )
@@ -49,67 +44,97 @@ def main():
         parser.error('--generator_interval must be a positive integer')
     if args.reporter_interval <= 0:
         parser.error('--reporter_interval must be a positive integer')
+    return args
+
+
+async def _run_generator(gen: generator.Generator, rep: reporter.Reporter,
+                         args: argparse.Namespace, dashboard: Dashboard | None,
+                         stop: asyncio.Event):
+    logger = setup_logging()
+    while not stop.is_set():
+        await asyncio.to_thread(gen.generate_files, args.num_files_min, args.num_files_max)
+
+        if dashboard:
+            dashboard.update_stats(
+                {'files_count': gen.generate_files_call_count * args.num_files_max,
+                 'cycle': gen.generate_files_call_count},
+                {'missions': rep.mission_stats(),
+                 'last_report_time': rep.last_report_time},
+            )
+            dashboard.update_display()
+
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=args.generator_interval)
+        except TimeoutError:
+            pass
+
+
+async def _run_reporter(gen: generator.Generator, rep: reporter.Reporter,
+                        args: argparse.Namespace, dashboard: Dashboard | None,
+                        config_data: dict, stop: asyncio.Event):
+    logger = setup_logging()
+    while not stop.is_set():
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=args.reporter_interval)
+        except TimeoutError:
+            pass
+        if stop.is_set():
+            break
+
+        await asyncio.to_thread(
+            rep.process_files,
+            config_data['routes']['devices'],
+            config_data['routes']['backups'],
+        )
+
+        if dashboard:
+            from datetime import datetime
+            dashboard.update_stats(
+                {'files_count': gen.generate_files_call_count * args.num_files_max,
+                 'cycle': gen.generate_files_call_count},
+                {'missions': rep.mission_stats(),
+                 'last_report_time': rep.last_report_time},
+            )
+            dashboard.update_display()
+
+
+async def _async_main():
+    logger = setup_logging()
+    config_data = ConfigManager.read_yaml_config()
+
+    args = _parse_args(config_data)
+    if args is None:
+        return
+
     if args.reporter_interval <= args.generator_interval:
         logger.error("El intervalo de reportes debe ser mayor que el intervalo de generadores.")
         return
 
-    generator_instance = generator.Generator(config_data=config_data)
-    generator_instance.generate_device_folder()
+    gen = generator.Generator(config_data=config_data)
+    gen.generate_device_folder()
 
-    reporter_instance = reporter.Reporter(config_data=config_data)
+    rep = reporter.Reporter(config_data=config_data)
 
-    dashboard_instance = None
-    live_display = None
-    if args.dashboard:
-        dashboard_instance = Dashboard()
-        live_display = dashboard_instance.start_live_display()
+    dashboard = Dashboard() if args.dashboard else None
+    live = dashboard.start_live_display() if dashboard else None
 
-    number_of_generator_iterations = round(args.reporter_interval / args.generator_interval)
+    stop = asyncio.Event()
+    loop = asyncio.get_event_loop()
+    loop.add_signal_handler(signal.SIGTERM, lambda: stop.set())
 
     try:
-        with live_display if live_display else nullcontext():
-            while True:
-                for iteration in range(number_of_generator_iterations):
-                    generator_instance.generate_files(
-                        num_files_min=args.num_files_min,
-                        num_files_max=args.num_files_max,
-                    )
-
-                    if dashboard_instance:
-                        generator_stats = {
-                            'files_count': (iteration + 1) * args.num_files_max,
-                            'cycle': generator_instance.generate_files_call_count,
-                        }
-                        reporter_stats = {
-                            'missions': reporter_instance.mission_stats(),
-                            'last_report_time': reporter_instance.last_report_time,
-                        }
-                        dashboard_instance.update_stats(generator_stats, reporter_stats)
-                        dashboard_instance.update_display()
-
-                    time.sleep(args.generator_interval)
-
-                reporter_instance.process_files(
-                    config_data['routes']['devices'],
-                    config_data['routes']['backups'],
-                )
-
-                if dashboard_instance:
-                    from datetime import datetime
-                    generator_stats = {
-                        'files_count': number_of_generator_iterations * args.num_files_max,
-                        'cycle': generator_instance.generate_files_call_count,
-                    }
-                    reporter_stats = {
-                        'missions': reporter_instance.mission_stats(),
-                        'last_report_time': datetime.now(),
-                    }
-                    dashboard_instance.update_stats(generator_stats, reporter_stats)
-                    dashboard_instance.update_display()
-
-                time.sleep(args.reporter_interval)
-
+        with live if live else nullcontext():
+            await asyncio.gather(
+                _run_generator(gen, rep, args, dashboard, stop),
+                _run_reporter(gen, rep, args, dashboard, config_data, stop),
+            )
     except KeyboardInterrupt:
         logger.info("Proceso interrumpido por el usuario.")
-        if dashboard_instance:
-            dashboard_instance.stop_display()
+    finally:
+        stop.set()
+        if dashboard:
+            dashboard.stop_display()
+
+
+def main():
+    asyncio.run(_async_main())
