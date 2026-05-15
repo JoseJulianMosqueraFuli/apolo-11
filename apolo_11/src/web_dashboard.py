@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 import uvicorn
 
 from .dashboard import MissionStats, DashboardStats
@@ -139,10 +139,10 @@ class WebDashboard:
             with self._lock:
                 return self._stats_to_dict()
 
-        @self.app.get("/metrics")
+        @self.app.get("/metrics", response_class=PlainTextResponse)
         async def metrics():
             with self._lock:
-                return self._render_prometheus_metrics(), 200, {"Content-Type": "text/plain"}
+                return self._render_prometheus_metrics()
 
         @self.app.get("/", response_class=HTMLResponse)
         async def index():
