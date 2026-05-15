@@ -62,6 +62,15 @@ jobs:
           context: .
           push: false
           tags: apolo-11:ci
+          load: true
+
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: apolo-11:ci
+          format: table
+          exit-code: 1
+          severity: CRITICAL,HIGH
 
   k8s-validate:
     runs-on: ubuntu-latest

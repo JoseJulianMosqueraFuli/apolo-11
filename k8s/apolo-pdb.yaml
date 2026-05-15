@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: apolo-11-pdb
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: apolo-11

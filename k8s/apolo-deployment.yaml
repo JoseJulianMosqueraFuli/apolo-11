@@ -12,6 +12,10 @@ spec:
       labels:
         app: apolo-11
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
       containers:
         - name: apolo-11
           image: apolo-11:latest
@@ -20,15 +24,55 @@ spec:
           env:
             - name: RABBITMQ_HOST
               value: rabbitmq
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-auth
+                  key: username
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-auth
+                  key: password
           ports:
             - containerPort: 8000
               name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/stats
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/stats
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           volumeMounts:
             - name: config
               mountPath: /app/apolo_11/config/config.yaml
               subPath: config.yaml
             - name: results
               mountPath: /data/results
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: config
           configMap:
@@ -36,3 +80,5 @@ spec:
         - name: results
           persistentVolumeClaim:
             claimName: apolo-results
+        - name: tmp
+          emptyDir: {}
