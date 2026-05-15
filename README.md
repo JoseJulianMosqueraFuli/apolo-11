@@ -209,6 +209,13 @@ apolo-11/
 ├── 📁 docs/
 │   └── 📁 images/              # Diagrams and visual documentation
 ├── 📄 main.py                  # Backward-compatible entry point
+├── 📁 k8s/                     # Kubernetes manifests
+│   ├── 📄 apolo-configmap.yaml
+│   ├── 📄 apolo-deployment.yaml
+│   ├── 📄 apolo-pvc.yaml
+│   ├── 📄 rabbitmq-service.yaml
+│   ├── 📄 rabbitmq-statefulset.yaml
+│   └── 📄 README.md
 ├── 📄 Dockerfile               # Docker image build
 ├── 📄 docker-compose.yml       # Multi-service orchestration
 └── 📄 pyproject.toml           # Project dependencies
@@ -308,6 +315,17 @@ routes:
 - **Concurrency**: No support for multiple simultaneous instances accessing the same log files
 - **Error Handling**: Basic error handling for malformed log files may need enhancement
 - **Resource Usage**: Large datasets may require additional memory optimization
+
+## ☸️ Kubernetes
+
+Manifests in [`k8s/`](k8s/):
+
+```bash
+kubectl apply -f k8s/
+kubectl logs -l app=apolo-11
+```
+
+Includes RabbitMQ (StatefulSet), ConfigMap, PVC, and the app Deployment. See [`k8s/README.md`](k8s/README.md) for full instructions.
 
 ## 🐳 Docker
 

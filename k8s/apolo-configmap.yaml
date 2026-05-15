@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apolo-config
+data:
+  config.yaml: |
+    general:
+      num_files_initial: 1
+      num_files_final: 100
+      time_cycle: 20
+    missions:
+      codes:
+        OrbitOne: ORBONE
+        ColonyMoon: CLNM
+        VacMars: TMRS
+        GalaxyTwo: GALXONE
+      names:
+        - OrbitOne
+        - ColonyMoon
+        - VacMars
+        - GalaxyTwo
+        - Moon'sBallon
+    devices:
+      status:
+        - excellent
+        - good
+        - warning
+        - faulty
+        - killed
+        - unknown
+      types:
+        - Satellite
+        - Spaceship
+        - SpaceSuit
+        - Rover
+        - Equipment
+    date_format: "%d%m%y%H%M%S"
+    logging:
+      level: INFO
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    routes:
+      results: /data/results
+      devices: /data/results/devices
+      backups: /data/results/backups/
+      reports: /data/results/reports/
