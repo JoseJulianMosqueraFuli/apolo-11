@@ -9,7 +9,7 @@ from apolo_11.src.logging_config import setup_logging
 from apolo_11.src.dashboard import Dashboard
 
 
-def _parse_args(config_data: dict) -> argparse.Namespace | None:
+def _parse_args(config_data: dict, argv: list[str] | None = None) -> argparse.Namespace | None:
     parser = argparse.ArgumentParser(
         description='Generate files and generate reports for the Apolo 11 mission'
     )
@@ -30,7 +30,7 @@ def _parse_args(config_data: dict) -> argparse.Namespace | None:
                         help='Time interval in seconds for the reporter')
     parser.add_argument('--dashboard', action='store_true',
                         help='Enable dashboard TUI for real-time monitoring')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.num_files_min <= 0:
         parser.error('--num_files_min must be a positive integer')
