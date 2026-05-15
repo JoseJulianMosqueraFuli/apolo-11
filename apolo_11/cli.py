@@ -2,11 +2,13 @@ import argparse
 import asyncio
 import signal
 from contextlib import nullcontext
+from datetime import datetime
 
 from apolo_11.src import generator, reporter
 from apolo_11.src.config import ConfigManager
 from apolo_11.src.logging_config import setup_logging
 from apolo_11.src.dashboard import Dashboard
+from apolo_11.src.messaging import MessageBroker, QUEUE_GENERATED
 
 
 def _parse_args(config_data: dict, argv: list[str] | None = None) -> argparse.Namespace | None:
@@ -49,9 +51,19 @@ def _parse_args(config_data: dict, argv: list[str] | None = None) -> argparse.Na
 
 async def _run_generator(gen: generator.Generator, rep: reporter.Reporter,
                          args: argparse.Namespace, dashboard: Dashboard | None,
-                         stop: asyncio.Event):
+                         stop: asyncio.Event, broker: MessageBroker | None = None):
     while not stop.is_set():
         await asyncio.to_thread(gen.generate_files, args.num_files_min, args.num_files_max)
+
+        if broker and broker.enabled:
+            await asyncio.to_thread(
+                broker.publish, QUEUE_GENERATED, {
+                    'cycle': gen.generate_files_call_count,
+                    'files_count': gen.generate_files_call_count * args.num_files_max,
+                    'num_files_min': args.num_files_min,
+                    'num_files_max': args.num_files_max,
+                    'timestamp': str(datetime.now()),
+                })
 
         if dashboard:
             dashboard.update_stats(
@@ -112,6 +124,10 @@ async def _async_main():
 
     rep = reporter.Reporter(config_data=config_data)
 
+    broker = MessageBroker()
+    if broker.enabled:
+        logger.info("Mensajería habilitada (RabbitMQ)")
+
     dashboard = Dashboard() if args.dashboard else None
     live = dashboard.start_live_display() if dashboard else None
 
@@ -122,13 +138,14 @@ async def _async_main():
     try:
         with live if live else nullcontext():
             await asyncio.gather(
-                _run_generator(gen, rep, args, dashboard, stop),
+                _run_generator(gen, rep, args, dashboard, stop, broker),
                 _run_reporter(gen, rep, args, dashboard, config_data, stop),
             )
     except KeyboardInterrupt:
         logger.info("Proceso interrumpido por el usuario.")
     finally:
         stop.set()
+        broker.close()
         if dashboard:
             dashboard.stop_display()
 
