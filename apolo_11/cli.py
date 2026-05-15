@@ -19,6 +19,8 @@ def _parse_args(config_data: dict, argv: list[str] | None = None) -> argparse.Na
     general_config = config_data['general']
     default_time_cycle = general_config['time_cycle']
 
+    parser.add_argument('--mode', choices=['all', 'generator', 'reporter'], default='all',
+                        help='Run mode: all (default), generator only, or reporter only')
     parser.add_argument('--num_files_min', type=int,
                         default=general_config['num_files_initial'],
                         help='Minimum number of files to generate')
@@ -120,18 +122,16 @@ async def _async_main():
     if args is None:
         return
 
-    if args.reporter_interval <= args.generator_interval:
+    if args.mode == 'all' and args.reporter_interval <= args.generator_interval:
         logger.error("El intervalo de reportes debe ser mayor que el intervalo de generadores.")
         return
 
     gen = generator.Generator(config_data=config_data)
-    gen.generate_device_folder()
-
     rep = reporter.Reporter(config_data=config_data)
 
     broker = MessageBroker()
     if broker.enabled:
-        logger.info("Mensajería habilitada (RabbitMQ)")
+        logger.info("Mensajeria habilitada (RabbitMQ)")
 
     dashboards: list = []
 
@@ -154,10 +154,17 @@ async def _async_main():
 
     try:
         with live if live else nullcontext():
-            await asyncio.gather(
-                _run_generator(gen, rep, args, dashboards, stop, broker),
-                _run_reporter(gen, rep, args, dashboards, config_data, stop),
-            )
+            if args.mode == 'generator':
+                gen.generate_device_folder()
+                await _run_generator(gen, rep, args, dashboards, stop, broker)
+            elif args.mode == 'reporter':
+                await _run_reporter(gen, rep, args, dashboards, config_data, stop)
+            else:
+                gen.generate_device_folder()
+                await asyncio.gather(
+                    _run_generator(gen, rep, args, dashboards, stop, broker),
+                    _run_reporter(gen, rep, args, dashboards, config_data, stop),
+                )
     except KeyboardInterrupt:
         logger.info("Proceso interrumpido por el usuario.")
     finally:
