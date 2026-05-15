@@ -50,6 +50,55 @@ class TestParseArgs:
         args = _parse_args(BASE_CONFIG, argv=[])
         assert args.dashboard is False
 
+    def test_generator_interval_zero_raises(self):
+        with pytest.raises(SystemExit):
+            _parse_args(BASE_CONFIG, argv=['--generator_interval', '0'])
+
+    def test_reporter_interval_zero_raises(self):
+        with pytest.raises(SystemExit):
+            _parse_args(BASE_CONFIG, argv=['--reporter_interval', '0'])
+
+
+class TestAsyncMain:
+    @pytest.mark.asyncio
+    async def test_reporter_interval_error_returns(self):
+        with patch('apolo_11.cli.ConfigManager.read_yaml_config',
+                   return_value={'general': {'num_files_initial': 1, 'num_files_final': 100,
+                                             'time_cycle': 10},
+                                 'missions': {'codes': {}, 'names': []},
+                                 'devices': {'types': [], 'status': []},
+                                 'date_format': '%d%m%y%H%M%S',
+                                 'routes': {'devices': '/tmp', 'backups': '/tmp', 'results': '/tmp'}}):
+            with patch('apolo_11.cli.setup_logging') as mock_logging:
+                mock_logger = MagicMock()
+                mock_logging.return_value = mock_logger
+                from apolo_11.cli import _async_main
+                await _async_main()
+                mock_logger.error.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_async_main_runs_tasks_and_stops(self):
+        with patch('apolo_11.cli.ConfigManager.read_yaml_config',
+                   return_value={'general': {'num_files_initial': 1, 'num_files_final': 100,
+                                             'time_cycle': 20},
+                                 'missions': {'codes': {}, 'names': []},
+                                 'devices': {'types': [], 'status': []},
+                                 'date_format': '%d%m%y%H%M%S',
+                                 'routes': {'devices': '/tmp', 'backups': '/tmp', 'results': '/tmp'}}):
+            with patch('apolo_11.cli.setup_logging'), \
+                 patch('apolo_11.src.generator.Generator') as mock_gen, \
+                 patch('apolo_11.src.reporter.Reporter'), \
+                 patch('apolo_11.cli.Dashboard'), \
+                 patch('apolo_11.cli.signal'):
+                from apolo_11.cli import _async_main
+                with patch('apolo_11.cli.sys.argv', ['apolo', '--generator_interval', '3',
+                                                       '--reporter_interval', '6',
+                                                       '--num_files_min', '1',
+                                                       '--num_files_max', '5']):
+                    with pytest.raises(TimeoutError):
+                        await asyncio.wait_for(_async_main(), timeout=0.5)
+                    mock_gen.return_value.generate_device_folder.assert_called_once()
+
 
 class TestRunGenerator:
     @pytest.mark.asyncio
