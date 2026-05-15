@@ -7,8 +7,10 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Poetry](https://img.shields.io/badge/Poetry-dependency%20management-blue.svg)](https://python-poetry.org/)
 [![CI](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml/badge.svg)](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-77%20passing-green.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/Coverage-98%25-brightgreen.svg)](htmlcov/)
+[![Tests](https://img.shields.io/badge/Tests-88%20passing-green.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/Coverage-96%25-brightgreen.svg)](htmlcov/)
+[![FastAPI](https://img.shields.io/badge/Web-FastAPI%20Dashboard-teal.svg)](https://fastapi.tiangolo.com/)
+[![Kubernetes](https://img.shields.io/badge/K8s-Docker%20Desktop-blue.svg)](k8s/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 _A professional simulation and monitoring system for NASA space missions_
@@ -44,6 +46,8 @@ Apollo 11 is a comprehensive simulation and monitoring system designed for NASA 
 - 🧪 **Comprehensive testing** (unit tests + property-based testing)
 - 🖥️ **CLI interface** with argument parsing
 - 📊 **Real-time dashboard** with Rich library
+- 🌐 **Web dashboard** with FastAPI and auto-refresh
+- ☸️ **Kubernetes** deployment with Ingress and RabbitMQ
 
 The system simulates real-world scenarios where multiple devices across different space missions generate telemetry data that needs to be collected, analyzed, and reported in real-time.
 
@@ -57,14 +61,17 @@ Apollo 11 provides a complete suite of tools for space mission monitoring:
 - **📈 Report Analyzer**: Processes logs and generates comprehensive device status statistics
 - **💾 Backup Management**: Automatically archives processed data with intelligent folder handling
 - **🖥️ TUI Dashboard**: Beautiful terminal interface for real-time monitoring using Rich library
+- **🌐 Web Dashboard**: FastAPI web dashboard with JSON API, HTML interface, and Swagger docs
 
 ### 🚀 Advanced Capabilities
 
 - **Real-time Monitoring**: Live updates of system status and mission statistics
+- **Web Dashboard**: Auto-refreshing web UI with REST API and Swagger documentation
 - **Property-based Testing**: Robust validation using Hypothesis framework
 - **Centralized Logging**: Configurable logging system across all modules
-- **High Test Coverage**: 98% test coverage with 45 comprehensive tests
+- **High Test Coverage**: 96% test coverage with 88 comprehensive tests
 - **Professional CLI**: Full argument parsing with validation and help system
+- **Kubernetes Support**: Ready-to-deploy manifests for Docker Desktop
 
 ## 🛠️ Installation
 
@@ -127,6 +134,8 @@ poetry run apolo --dashboard
 | `--generator_interval` | 20      | Time in seconds between each file generation cycle   |
 | `--reporter_interval`  | 60      | Time in seconds between each report generation cycle |
 | `--dashboard`          | False   | Enable TUI dashboard for real-time monitoring        |
+| `--api`                | False   | Enable web API dashboard (FastAPI)                   |
+| `--api-port`           | 8000    | Port for the web API dashboard                       |
 
 > **⚠️ Important:** The reporter interval must be greater than the generator interval to prevent data accumulation.
 
@@ -169,7 +178,48 @@ _Real-time monitoring dashboard with live statistics_
 ```bash
 # Recommended settings for optimal dashboard experience
 poetry run apolo --dashboard --generator_interval 3 --reporter_interval 10
+
+# Enable web dashboard (also works alongside TUI)
+poetry run apolo --api --api-port 8000
+
+# Both together
+poetry run apolo --dashboard --api --generator_interval 3 --reporter_interval 10
 ```
+
+## 🌐 Web Dashboard
+
+The system includes a modern web dashboard built with **FastAPI** for browser-based monitoring:
+
+<div align="center">
+
+### 🎛️ Endpoints
+
+| Endpoint          | Description                                      |
+| ----------------- | ------------------------------------------------ |
+| `GET /`           | HTML dashboard with auto-refresh (every 3s)      |
+| `GET /api/stats`  | JSON API with real-time system and mission stats |
+| `GET /docs`       | Swagger UI for API exploration                   |
+
+</div>
+
+### Usage
+
+```bash
+# Enable the web dashboard
+poetry run apolo --api --generator_interval 3 --reporter_interval 10
+
+# Open in browser
+open http://localhost:8000
+```
+
+The web dashboard displays the same real-time information as the TUI dashboard:
+
+- **📁 Files Generated**: Total log files created in current session
+- **🔄 Current Cycle**: Active generation cycle number
+- **⏰ Last Report**: Timestamp of most recent statistical report
+- **🚀 Mission Statistics**: Per-mission device counts and status breakdowns with color-coded badges
+- **⚡ Auto-refresh**: Updates every 3 seconds via JavaScript fetch API
+- **📡 REST API**: Machine-readable JSON at `/api/stats` for external integrations
 
 ## 🏗️ Architecture
 
@@ -199,6 +249,7 @@ apolo-11/
 │   │   ├── 📄 cli.py           # Async CLI entry point
 │   │   ├── 📄 config.py        # ConfigManager
 │   │   ├── 📄 dashboard.py     # TUI Dashboard with Rich
+│   ├── 📄 web_dashboard.py # Web Dashboard with FastAPI
 │   │   ├── 📄 generator.py     # Log generator
 │   │   ├── 📄 logging_config.py # Centralized logging
 │   │   ├── 📄 messaging.py     # RabbitMQ message broker
@@ -213,6 +264,8 @@ apolo-11/
 │   ├── 📄 apolo-configmap.yaml
 │   ├── 📄 apolo-deployment.yaml
 │   ├── 📄 apolo-pvc.yaml
+│   ├── 📄 apolo-service.yaml
+│   ├── 📄 rabbitmq-ingress.yaml
 │   ├── 📄 rabbitmq-service.yaml
 │   ├── 📄 rabbitmq-statefulset.yaml
 │   └── 📄 README.md
@@ -227,8 +280,8 @@ The project maintains high code quality with comprehensive testing:
 
 ### Test Coverage
 
-- **✅ 77 Tests Passing**: All tests pass consistently
-- **📊 98% Coverage**: Excellent test coverage across all modules
+- **✅ 88 Tests Passing**: All tests pass consistently
+- **📊 96% Coverage**: Excellent test coverage across all modules
 - **🔬 Property-Based Testing**: Using Hypothesis for robust validation
 - **🧪 Unit Testing**: Comprehensive unit tests for all components
 
@@ -318,14 +371,42 @@ routes:
 
 ## ☸️ Kubernetes
 
-Manifests in [`k8s/`](k8s/):
+Deploy to any Kubernetes cluster (tested on Docker Desktop & Kind):
 
 ```bash
+# Deploy everything
 kubectl apply -f k8s/
-kubectl logs -l app=apolo-11
+
+# Watch pods
+kubectl get pods -w
 ```
 
-Includes RabbitMQ (StatefulSet), ConfigMap, PVC, and the app Deployment. See [`k8s/README.md`](k8s/README.md) for full instructions.
+### Cluster Architecture
+
+| Resource              | Description                                    |
+| --------------------- | ---------------------------------------------- |
+| `rabbitmq`            | StatefulSet + Service (AMQP 5672, Mgmt 15672)  |
+| `apolo-11`            | Deployment with TUI + Web dashboard (port 8000) |
+| `apolo-config`        | ConfigMap mounted at `/app/apolo_11/config/`    |
+| `apolo-results`       | PVC for persistent mission data                 |
+| `apolo-ingress`       | Ingress for `apolo.local` and `rabbitmq.local`  |
+
+### Access
+
+```bash
+# Web dashboard
+kubectl port-forward svc/apolo-11 8000:8000
+# Open http://localhost:8000
+
+# RabbitMQ management
+kubectl port-forward svc/rabbitmq 15672:15672
+# Open http://localhost:15672 (guest/guest)
+
+# View logs
+kubectl logs -l app=apolo-11 -f
+```
+
+See [`k8s/README.md`](k8s/README.md) for full instructions.
 
 ## 🐳 Docker
 
@@ -333,13 +414,13 @@ Includes RabbitMQ (StatefulSet), ConfigMap, PVC, and the app Deployment. See [`k
 
 ```bash
 docker build -t apolo-11 .
-docker run --rm apolo-11 --dashboard
+docker run --rm apolo-11 --dashboard --api --generator_interval 3 --reporter_interval 10
 ```
 
 Mount a volume to persist results:
 
 ```bash
-docker run --rm -v $(pwd)/results:/app/apolo_11/results apolo-11
+docker run --rm -v $(pwd)/results:/app/apolo_11/results -p 8000:8000 apolo-11 --api --generator_interval 3 --reporter_interval 10
 ```
 
 ### Docker Compose (with RabbitMQ)
@@ -382,6 +463,8 @@ External consumers can subscribe to `apolo.generated` for real-time monitoring, 
 
 ## 🚧 Recent Improvements
 
+- ✅ **Web Dashboard**: FastAPI with auto-refresh HTML, JSON API, and Swagger docs
+- ✅ **Kubernetes**: Service + Ingress for web dashboard and RabbitMQ
 - ✅ **Architecture**: Eliminated side-effect imports — no IO at module load time
 - ✅ **Dependency Injection**: All components accept optional config, testable without mocks
 - ✅ **Config Stability**: Routes changed from fragile list indices to dict keys
@@ -391,7 +474,7 @@ External consumers can subscribe to `apolo.generated` for real-time monitoring, 
 - ✅ **Security**: Patched pytest (CVE-2024-11305) and Pygments (CVE-2024-43791)
 - ✅ **Logging**: No longer stomps on root logger — safe as a library
 - ✅ **SIGTERM Handling**: Graceful shutdown on kill signal
-- 🔄 **Future**: Parallel processing with threads/async (in development)
+- 🔄 **Future**: Web dashboard with WebSocket real-time updates
 
 ## 🤝 Contributing
 
@@ -411,10 +494,10 @@ git clone git@github.com:yourusername/apolo-11.git
 cd apolo-11
 
 # Install development dependencies
-poetry install --with dev
+poetry install
 
 # Run tests before committing
-poetry run pytest --cov=apolo_11
+poetry run pytest --cov=apolo_11 --cov-fail-under=95
 
 # Run linting
 poetry run flake8 apolo_11/

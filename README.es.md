@@ -7,9 +7,10 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Poetry](https://img.shields.io/badge/Poetry-gestión%20de%20dependencias-blue.svg)](https://python-poetry.org/)
 [![CI](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml/badge.svg)](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-77%20pasando-green.svg)](tests/)
-[![Cobertura](https://img.shields.io/badge/Cobertura-98%25-brightgreen.svg)](htmlcov/)
-[![Licencia](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-88%20pasando-green.svg)](tests/)
+[![Cobertura](https://img.shields.io/badge/Cobertura-96%25-brightgreen.svg)](htmlcov/)
+[![FastAPI](https://img.shields.io/badge/Web-FastAPI%20Dashboard-teal.svg)](https://fastapi.tiangolo.com/)
+[![Kubernetes](https://img.shields.io/badge/K8s-Docker%20Desktop-blue.svg)](k8s/)
 [![Rich](https://img.shields.io/badge/TUI-Rich%20Dashboard-purple.svg)](https://rich.readthedocs.io/)
 
 _Un sistema profesional de simulación y monitoreo para misiones espaciales NASA_
@@ -45,6 +46,8 @@ Apollo 11 es un sistema integral de simulación y monitoreo diseñado para misio
 - 🧪 **Testing integral** (tests unitarios + property-based testing)
 - 🖥️ **Interfaz CLI** con parsing de argumentos
 - 📊 **Dashboard en tiempo real** con librería Rich
+- 🌐 **Dashboard web** con FastAPI y auto-refresh
+- ☸️ **Kubernetes** con Ingress y RabbitMQ
 
 El sistema simula escenarios del mundo real donde múltiples dispositivos en diferentes misiones espaciales generan datos de telemetría que necesitan ser recolectados, analizados y reportados en tiempo real.
 
@@ -58,14 +61,17 @@ Apollo 11 proporciona un conjunto completo de herramientas para el monitoreo de 
 - **📈 Analizador de Reportes**: Procesa logs y genera estadísticas completas de estado de dispositivos
 - **💾 Gestión de Backups**: Archiva automáticamente datos procesados con manejo inteligente de carpetas
 - **🖥️ Dashboard TUI**: Hermosa interfaz de terminal para monitoreo en tiempo real usando la librería Rich
+- **🌐 Dashboard Web**: Dashboard web con FastAPI, API JSON y documentación Swagger
 
 ### 🚀 Capacidades Avanzadas
 
 - **Monitoreo en Tiempo Real**: Actualizaciones en vivo del estado del sistema y estadísticas de misiones
+- **Dashboard Web**: Interfaz web con auto-refresh, API REST y documentación Swagger
 - **Property-based Testing**: Validación robusta usando el framework Hypothesis
 - **Logging Centralizado**: Sistema de logging configurable en todos los módulos
-- **Alta Cobertura de Tests**: 98% de cobertura de tests con 45 tests integrales
+- **Alta Cobertura de Tests**: 96% de cobertura de tests con 88 tests integrales
 - **CLI Profesional**: Sistema completo de parsing de argumentos con validación y ayuda
+- **Soporte Kubernetes**: Manifiestos listos para desplegar en Docker Desktop
 
 ## Instalación
 
@@ -117,6 +123,24 @@ El sistema incluye un dashboard de Interfaz de Usuario Terminal (TUI) para monit
 poetry run apolo --dashboard --generator_interval 3 --reporter_interval 10
 ```
 
+### Dashboard Web
+
+El sistema incluye un dashboard web moderno construido con **FastAPI**:
+
+| Endpoint          | Descripción                                         |
+| ----------------- | --------------------------------------------------- |
+| `GET /`           | Página HTML con auto-refresh (cada 3s)              |
+| `GET /api/stats`  | API JSON con estadísticas del sistema y misiones    |
+| `GET /docs`       | Swagger UI para explorar la API                     |
+
+```bash
+# Habilitar el dashboard web
+poetry run apolo --api --generator_interval 3 --reporter_interval 10
+
+# Abrir en el navegador
+open http://localhost:8000
+```
+
 ### Parámetros CLI
 
 | Parámetro              | Default | Descripción                                           |
@@ -126,6 +150,8 @@ poetry run apolo --dashboard --generator_interval 3 --reporter_interval 10
 | `--generator_interval` | 20      | Tiempo en segundos entre cada ciclo de generación     |
 | `--reporter_interval`  | 60      | Tiempo en segundos entre cada ciclo de reportes       |
 | `--dashboard`          | False   | Habilitar dashboard TUI para monitoreo en tiempo real |
+| `--api`                | False   | Habilitar dashboard web (FastAPI)                     |
+| `--api-port`           | 8000    | Puerto para el dashboard web                          |
 
 **Nota:** El intervalo de reportes debe ser mayor que el intervalo del generador. El sistema ejecuta múltiples ciclos de generación antes de cada ciclo de reportes.
 
@@ -150,13 +176,17 @@ apolo-11/
 │       ├── classes.py       # Clases Mission y Device
 │       ├── config.py        # ConfigManager
 │       ├── dashboard.py     # Dashboard TUI con Rich
+│       ├── web_dashboard.py # Dashboard web con FastAPI
 │       ├── generator.py     # Generador de logs
 │       ├── logging_config.py # Logging centralizado
 │       └── reporter.py      # Procesador de reportes
 ├── tests/
-│   └── tests_src/           # Tests unitarios y de propiedades
+│   └── tests_src/           # Tests unitarios y de propiedades (88+)
 ├── docs/
 │   └── images/              # Diagramas y documentación visual
+├── k8s/                     # Manifiestos Kubernetes
+├── Dockerfile               # Imagen Docker
+├── docker-compose.yml       # Orquestación multi-servicio
 ├── main.py                  # Punto de entrada (delega a apolo_11.cli)
 └── pyproject.toml           # Dependencias del proyecto
 ```
@@ -206,14 +236,42 @@ El Dashboard TUI proporciona capacidades de monitoreo en tiempo real:
 - El intervalo de reportes siempre debe ser mayor que el intervalo del generador. Si los archivos se generan más rápido de lo que pueden procesarse, los datos pueden acumularse.
 - El sistema no maneja acceso concurrente a archivos de log. No se soporta ejecutar múltiples instancias simultáneamente.
 - El manejo de errores durante el procesamiento de archivos es básico; archivos de log malformados pueden causar problemas.
+- El Dashboard TUI no es accesible en despliegues Docker/Kubernetes (usar `--api` para web).
 
-## Mejoras en Desarrollo
+## ☸️ Kubernetes
 
-- ✅ Corrección de bugs en `move_folders_to_backup`
-- ✅ Mejora de cobertura de tests
-- ✅ Dashboard TUI con Rich
-- ✅ Logging centralizado y configurable
-- 🔄 Procesamiento paralelo con threads/async
+Despliegue en Docker Desktop o Kind:
+
+```bash
+kubectl apply -f k8s/
+kubectl get pods -w
+```
+
+### Acceso
+
+```bash
+# Dashboard web
+kubectl port-forward svc/apolo-11 8000:8000
+# http://localhost:8000
+
+# RabbitMQ
+kubectl port-forward svc/rabbitmq 15672:15672
+# http://localhost:15672 (guest/guest)
+```
+
+Ver [`k8s/README.md`](k8s/README.md) para instrucciones detalladas.
+
+## Mejoras Recientes
+
+- ✅ **Dashboard Web**: FastAPI con HTML auto-refresh, API JSON y Swagger
+- ✅ **Kubernetes**: Service + Ingress para web dashboard y RabbitMQ
+- ✅ **Arquitectura**: Eliminación de side-effect imports — sin IO al cargar módulos
+- ✅ **Inyección de Dependencias**: Componentes aceptan config opcional, testeables sin mocks
+- ✅ **CLI Entry Point**: Comando `apolo` funciona después de `pip install`
+- ✅ **CI/CD**: GitHub Actions con matrix testing en Python 3.10–3.12
+- ✅ **Logging**: Ya no interfiere con el root logger — seguro como librería
+- ✅ **SIGTERM Handling**: Apagado graceful en kill signal
+- 🔄 **Futuro**: Dashboard web con WebSockets para datos en tiempo real
 
 ## Licencia
 
