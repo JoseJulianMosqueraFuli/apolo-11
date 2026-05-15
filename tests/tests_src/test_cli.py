@@ -93,7 +93,9 @@ class TestAsyncMain:
                  patch('apolo_11.src.generator.Generator') as mock_gen, \
                  patch('apolo_11.src.reporter.Reporter'), \
                  patch('apolo_11.cli.Dashboard'), \
-                 patch('apolo_11.cli.WebDashboard'):
+                 patch('apolo_11.cli.WebDashboard'), \
+                 patch('apolo_11.cli.asyncio.get_event_loop') as mock_loop:
+                mock_loop.return_value.add_signal_handler = MagicMock()
                 from apolo_11.cli import _async_main
                 with patch('sys.argv', ['apolo', '--generator_interval', '3',
                                         '--reporter_interval', '6',
