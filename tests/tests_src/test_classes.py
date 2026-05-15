@@ -47,7 +47,7 @@ def test_configurable_class_invalid_key():
         Configurable("invalid_key")
 
 
-@given(st.text().filter(lambda x: x not in ["missions", "devices", "general", "date_format", "routes"]))
+@given(st.text().filter(lambda x: x not in ["missions", "devices", "general", "date_format", "routes", "logging"]))
 def test_property_invalid_config_keys_raise_keyerror(invalid_key):
     """
     Property 3: Claves de configuración inválidas lanzan KeyError
