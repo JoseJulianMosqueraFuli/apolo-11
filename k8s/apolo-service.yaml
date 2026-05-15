@@ -8,4 +8,4 @@ spec:
       targetPort: 8000
       name: http
   selector:
-    app: apolo-11
+    app: apolo-reporter

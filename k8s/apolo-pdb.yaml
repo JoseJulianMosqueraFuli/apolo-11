@@ -6,4 +6,4 @@ spec:
   maxUnavailable: 0
   selector:
     matchLabels:
-      app: apolo-11
+      app: apolo-reporter
