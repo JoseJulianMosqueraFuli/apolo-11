@@ -16,10 +16,12 @@ spec:
         runAsNonRoot: true
         runAsUser: 1001
         runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: apolo-11
           image: apolo-11:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           args: ["--dashboard", "--api", "--api-port", "8000", "--generator_interval", "3", "--reporter_interval", "10"]
           env:
             - name: RABBITMQ_HOST
@@ -42,6 +44,8 @@ spec:
             capabilities:
               drop: ["ALL"]
             readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
           resources:
             requests:
               cpu: "100m"
@@ -73,6 +77,8 @@ spec:
               mountPath: /data/results
             - name: tmp
               mountPath: /tmp
+            - name: poetry-cache
+              mountPath: /home/apolo/.cache
       volumes:
         - name: config
           configMap:
@@ -81,4 +87,6 @@ spec:
           persistentVolumeClaim:
             claimName: apolo-results
         - name: tmp
+          emptyDir: {}
+        - name: poetry-cache
           emptyDir: {}
