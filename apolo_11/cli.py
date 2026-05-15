@@ -91,7 +91,7 @@ async def _run_reporter(gen: generator.Generator, rep: reporter.Reporter,
     while not stop.is_set():
         try:
             await asyncio.wait_for(stop.wait(), timeout=args.reporter_interval)
-        except TimeoutError:
+        except (TimeoutError, asyncio.CancelledError):
             pass
         if stop.is_set():
             break
