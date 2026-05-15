@@ -1,0 +1,3 @@
+[run]
+omit =
+    apolo_11/cli.py

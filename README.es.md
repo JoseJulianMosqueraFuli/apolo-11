@@ -6,7 +6,8 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Poetry](https://img.shields.io/badge/Poetry-gestión%20de%20dependencias-blue.svg)](https://python-poetry.org/)
-[![Tests](https://img.shields.io/badge/Tests-45%20pasando-green.svg)](tests/)
+[![CI](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml/badge.svg)](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-48%20pasando-green.svg)](tests/)
 [![Cobertura](https://img.shields.io/badge/Cobertura-98%25-brightgreen.svg)](htmlcov/)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](LICENSE)
 [![Rich](https://img.shields.io/badge/TUI-Rich%20Dashboard-purple.svg)](https://rich.readthedocs.io/)
@@ -80,9 +81,6 @@ cd apolo-11
 
 # Instalar dependencias
 poetry install
-
-# Activar entorno virtual
-poetry shell
 ```
 
 ## Uso
@@ -91,13 +89,13 @@ poetry shell
 
 ```bash
 # Con valores por defecto
-poetry run python main.py
+poetry run apolo
 
 # Con parámetros personalizados
-poetry run python main.py --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
+poetry run apolo --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
 
 # Con dashboard habilitado para monitoreo en tiempo real
-poetry run python main.py --dashboard
+poetry run apolo --dashboard
 ```
 
 ### Dashboard TUI
@@ -116,7 +114,7 @@ El sistema incluye un dashboard de Interfaz de Usuario Terminal (TUI) para monit
 **Para habilitar el dashboard:**
 
 ```bash
-poetry run python main.py --dashboard --generator_interval 3 --reporter_interval 10
+poetry run apolo --dashboard --generator_interval 3 --reporter_interval 10
 ```
 
 ### Parámetros CLI
@@ -159,7 +157,7 @@ apolo-11/
 │   └── tests_src/           # Tests unitarios y de propiedades
 ├── docs/
 │   └── images/              # Diagramas y documentación visual
-├── main.py                  # Punto de entrada
+├── main.py                  # Punto de entrada (delega a apolo_11.cli)
 └── pyproject.toml           # Dependencias del proyecto
 ```
 

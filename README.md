@@ -6,10 +6,10 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Poetry](https://img.shields.io/badge/Poetry-dependency%20management-blue.svg)](https://python-poetry.org/)
-[![Tests](https://img.shields.io/badge/Tests-45%20passing-green.svg)](tests/)
+[![CI](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml/badge.svg)](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-48%20passing-green.svg)](tests/)
 [![Coverage](https://img.shields.io/badge/Coverage-98%25-brightgreen.svg)](htmlcov/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Rich](https://img.shields.io/badge/TUI-Rich%20Dashboard-purple.svg)](https://rich.readthedocs.io/)
 
 _A professional simulation and monitoring system for NASA space missions_
 
@@ -83,11 +83,8 @@ cd apolo-11
 # 2. Install dependencies
 poetry install
 
-# 3. Activate virtual environment
-poetry shell
-
-# 4. Run with dashboard (recommended)
-poetry run python main.py --dashboard
+# 3. Run with dashboard (recommended)
+poetry run apolo --dashboard
 ```
 
 ### Verify Installation
@@ -103,17 +100,13 @@ poetry run pytest --cov=apolo_11 -v
 
 ```bash
 # Default configuration
-poetry run python main.py
+poetry run apolo
 
 # Custom parameters
-poetry run python main.py \
-  --num_files_min 1 \
-  --num_files_max 100 \
-  --generator_interval 5 \
-  --reporter_interval 15
+poetry run apolo --num_files_min 1 --num_files_max 100 --generator_interval 5 --reporter_interval 15
 
 # Enable dashboard for real-time monitoring (recommended)
-poetry run python main.py --dashboard
+poetry run apolo --dashboard
 ```
 
 ### Command Line Parameters
@@ -166,7 +159,7 @@ _Real-time monitoring dashboard with live statistics_
 
 ```bash
 # Recommended settings for optimal dashboard experience
-poetry run python main.py --dashboard --generator_interval 3 --reporter_interval 10
+poetry run apolo --dashboard --generator_interval 3 --reporter_interval 10
 ```
 
 ## 🏗️ Architecture
@@ -203,7 +196,7 @@ apolo-11/
 │   └── 📁 tests_src/           # Unit and property tests
 ├── 📁 docs/
 │   └── 📁 images/              # Diagrams and visual documentation
-├── 📄 main.py                  # Entry point
+├── 📄 main.py                  # Entry point (delegates to apolo_11.cli)
 └── 📄 pyproject.toml           # Project dependencies
 ```
 
@@ -213,7 +206,7 @@ The project maintains high code quality with comprehensive testing:
 
 ### Test Coverage
 
-- **✅ 45 Tests Passing**: All tests pass consistently
+- **✅ 48 Tests Passing**: All tests pass consistently
 - **📊 98% Coverage**: Excellent test coverage across all modules
 - **🔬 Property-Based Testing**: Using Hypothesis for robust validation
 - **🧪 Unit Testing**: Comprehensive unit tests for all components
@@ -281,10 +274,10 @@ logging:
 
 # Directory paths
 routes:
-  - results: ./apolo_11/results
-  - devices: ./apolo_11/results/devices
-  - backups: ./apolo_11/results/backups/
-  - reports: ./apolo_11/results/reports/
+  results: ./apolo_11/results
+  devices: ./apolo_11/results/devices
+  backups: ./apolo_11/results/backups/
+  reports: ./apolo_11/results/reports/
 ```
 
 ### Customization
@@ -304,11 +297,15 @@ routes:
 
 ## 🚧 Recent Improvements
 
-- ✅ **Bug Fixes**: Resolved issues in `move_folders_to_backup` method
-- ✅ **Test Coverage**: Increased from basic to 98% comprehensive coverage
-- ✅ **TUI Dashboard**: Added beautiful real-time monitoring interface with Rich
-- ✅ **Centralized Logging**: Implemented configurable logging system across all modules
-- ✅ **Property-Based Testing**: Added robust validation using Hypothesis framework
+- ✅ **Architecture**: Eliminated side-effect imports — no IO at module load time
+- ✅ **Dependency Injection**: All components accept optional config, testable without mocks
+- ✅ **Config Stability**: Routes changed from fragile list indices to dict keys
+- ✅ **Package Safety**: State file moved out of package source to results directory
+- ✅ **CLI Entry Point**: `apolo` command works after `pip install` (no more `python main.py`)
+- ✅ **CI/CD**: GitHub Actions with matrix testing across Python 3.10–3.12
+- ✅ **Security**: Patched pytest (CVE-2024-11305) and Pygments (CVE-2024-43791)
+- ✅ **Logging**: No longer stomps on root logger — safe as a library
+- ✅ **SIGTERM Handling**: Graceful shutdown on kill signal
 - 🔄 **Future**: Parallel processing with threads/async (in development)
 
 ## 🤝 Contributing

@@ -18,7 +18,7 @@ hypothesis = "^6.92.0"
 pygments = ">=2.19.3"
 
 [tool.poetry.scripts]
-apolo = "main:main"
+apolo = "apolo_11.cli:main"
 
 [build-system]
 requires = ["poetry-core"]
