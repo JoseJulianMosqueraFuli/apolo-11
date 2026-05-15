@@ -41,6 +41,8 @@ def main():
         parser.error('--num_files_min must be a positive integer')
     if args.num_files_max <= 0:
         parser.error('--num_files_max must be a positive integer')
+    if args.num_files_max > 100000:
+        parser.error('--num_files_max cannot exceed 100000')
     if args.num_files_min > args.num_files_max:
         parser.error('--num_files_min cannot be greater than --num_files_max')
     if args.generator_interval <= 0:
