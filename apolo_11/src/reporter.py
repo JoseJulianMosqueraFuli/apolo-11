@@ -71,6 +71,25 @@ class Reporter:
                 return "unknown"
         return "unknown"
 
+    def mission_stats(self) -> dict:
+        missions = {}
+        for (mission_name, device_type), statuses in self.devices_reports.items():
+            if mission_name not in missions:
+                missions[mission_name] = {'device_counts': {}, 'status_counts': {}}
+
+            if device_type in missions[mission_name]['device_counts']:
+                missions[mission_name]['device_counts'][device_type] += len(statuses)
+            else:
+                missions[mission_name]['device_counts'][device_type] = len(statuses)
+
+            for status in statuses:
+                if status in missions[mission_name]['status_counts']:
+                    missions[mission_name]['status_counts'][status] += 1
+                else:
+                    missions[mission_name]['status_counts'][status] = 1
+
+        return missions
+
     def generate_stats_report(self) -> None:
         stats_filename = f"APLSTATS-REPORT-{datetime.now().strftime(self._config['date_format'])}.log"
         stats_path = os.path.join(self._config['routes']['reports'], stats_filename)

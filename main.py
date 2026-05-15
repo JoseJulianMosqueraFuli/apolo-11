@@ -1,4 +1,5 @@
 import argparse
+import signal
 import time
 from contextlib import nullcontext
 
@@ -8,27 +9,9 @@ from apolo_11.src.logging_config import setup_logging
 from apolo_11.src.dashboard import Dashboard
 
 
-def _extract_mission_stats(reporter_instance):
-    missions = {}
-    for (mission_name, device_type), statuses in reporter_instance.devices_reports.items():
-        if mission_name not in missions:
-            missions[mission_name] = {'device_counts': {}, 'status_counts': {}}
-
-        if device_type in missions[mission_name]['device_counts']:
-            missions[mission_name]['device_counts'][device_type] += len(statuses)
-        else:
-            missions[mission_name]['device_counts'][device_type] = len(statuses)
-
-        for status in statuses:
-            if status in missions[mission_name]['status_counts']:
-                missions[mission_name]['status_counts'][status] += 1
-            else:
-                missions[mission_name]['status_counts'][status] = 1
-
-    return missions
-
-
 def main():
+    signal.signal(signal.SIGTERM, lambda sig, frame: exit(0))
+
     logger = setup_logging()
     config_data = ConfigManager.read_yaml_config()
 
@@ -79,7 +62,7 @@ def main():
         dashboard_instance = Dashboard()
         live_display = dashboard_instance.start_live_display()
 
-    number_of_generator_iterations = round(int(args.reporter_interval / args.generator_interval))
+    number_of_generator_iterations = round(args.reporter_interval / args.generator_interval)
 
     try:
         with live_display if live_display else nullcontext():
@@ -96,7 +79,7 @@ def main():
                             'cycle': generator_instance.generate_files_call_count,
                         }
                         reporter_stats = {
-                            'missions': _extract_mission_stats(reporter_instance),
+                            'missions': reporter_instance.mission_stats(),
                             'last_report_time': getattr(reporter_instance, 'last_report_time', None),
                         }
                         dashboard_instance.update_stats(generator_stats, reporter_stats)
@@ -116,7 +99,7 @@ def main():
                         'cycle': generator_instance.generate_files_call_count,
                     }
                     reporter_stats = {
-                        'missions': _extract_mission_stats(reporter_instance),
+                        'missions': reporter_instance.mission_stats(),
                         'last_report_time': datetime.now(),
                     }
                     dashboard_instance.update_stats(generator_stats, reporter_stats)

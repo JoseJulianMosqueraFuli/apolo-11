@@ -392,3 +392,19 @@ def test_noreport_suffix_transformation(folder_base_name):
         original_path = os.path.join(source_dir, folder_with_suffix)
         assert not os.path.exists(original_path), \
             f"Original folder '{folder_with_suffix}' should not exist after move"
+
+
+def test_mission_stats():
+    reporter_instance = Reporter(config_data={
+        'routes': {'reports': '/tmp'},
+        'date_format': '%d%m%y%H%M%S'
+    })
+    reporter_instance.devices_reports[('OrbitOne', 'Satellite')] = ['excellent', 'good']
+    reporter_instance.devices_reports[('ColonyMoon', 'Spaceship')] = ['unknown']
+
+    stats = reporter_instance.mission_stats()
+
+    assert 'OrbitOne' in stats
+    assert 'ColonyMoon' in stats
+    assert stats['OrbitOne']['device_counts']['Satellite'] == 2
+    assert stats['ColonyMoon']['status_counts']['unknown'] == 1
