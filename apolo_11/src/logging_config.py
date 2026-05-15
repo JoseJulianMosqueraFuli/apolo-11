@@ -7,11 +7,10 @@ all modules.
 """
 
 import logging
-from typing import Optional
 from .config import ConfigManager
 
 
-def setup_logging(config_path: Optional[str] = None) -> logging.Logger:
+def setup_logging(config_path: str | None = None) -> logging.Logger:
     """
     Set up centralized logging configuration for the Apollo 11 system.
 

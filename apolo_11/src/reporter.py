@@ -37,7 +37,7 @@ class Reporter:
             logger.error("Error durante el procesamiento: %s", str(e))
 
     def move_folders_to_backup(self, source_directory: str | None = None,
-                                backup_directory: str | None = None):
+                               backup_directory: str | None = None):
         source_directory = source_directory or self._config['routes']['devices']
         backup_directory = backup_directory or self._config['routes']['backups']
 
