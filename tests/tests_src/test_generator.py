@@ -1,8 +1,10 @@
 import os
+from pathlib import Path
 import pytest
 from datetime import datetime
 from unittest.mock import patch
 from apolo_11.src.generator import Generator
+from apolo_11.src.config import ConfigManager
 
 
 @pytest.fixture
@@ -45,76 +47,56 @@ def test_generate_contentfile(mock_datetime, generator_instance):
     assert 'Hash: ' in result.content
 
 
-@patch('builtins.open', create=True)
-@patch('os.path.join')
-def test_load_cycle_number(mock_join, mock_open, generator_instance):
-    # Test con archivo existente
-    mock_join.return_value = '/mocked/path/cycle_number.txt'
-    mock_file = mock_open.return_value.__enter__.return_value
-    mock_file.read.return_value.strip.return_value = '42'
+def test_load_cycle_number(tmpdir):
+    config_data = ConfigManager.read_yaml_config()
+    config_data['routes']['results'] = str(tmpdir)
+    gen = Generator(config_data=config_data)
 
-    generator_instance.load_cycle_number()
+    Path(tmpdir / '.cycle_number').write_text('42')
+    gen.load_cycle_number()
 
-    assert generator_instance.generate_files_call_count == 42
-    mock_open.assert_called_with('/mocked/path/cycle_number.txt', 'r')
+    assert gen.generate_files_call_count == 42
 
 
-@patch('builtins.open', create=True)
-@patch('os.path.join')
-def test_load_cycle_number_file_not_found(mock_join, mock_open, generator_instance):
-    # Test con archivo no existente
-    mock_join.return_value = '/mocked/path/cycle_number.txt'
-    mock_open.side_effect = [FileNotFoundError, mock_open.return_value]
+def test_load_cycle_number_file_not_found(tmpdir):
+    config_data = ConfigManager.read_yaml_config()
+    config_data['routes']['results'] = str(tmpdir)
+    gen = Generator(config_data=config_data)
 
-    generator_instance.load_cycle_number()
+    gen.load_cycle_number()
 
-    # Cuando no existe el archivo, se inicializa en 0 y luego save_cycle_number() lo incrementa a 1
-    assert generator_instance.generate_files_call_count == 1
-    # Verifica que se llama save_cycle_number cuando no existe el archivo
-    assert mock_open.call_count == 2  # Una para leer (falla) y otra para escribir
+    assert gen.generate_files_call_count == 1
+    assert Path(tmpdir / '.cycle_number').read_text().strip() == '1'
 
 
-@patch('builtins.open', create=True)
-@patch('os.path.join')
-def test_save_cycle_number(mock_join, mock_open, generator_instance):
-    # Test que verifica incremento y guardado correcto
-    mock_join.return_value = '/mocked/path/cycle_number.txt'
-    mock_file = mock_open.return_value.__enter__.return_value
+def test_save_cycle_number(tmpdir):
+    config_data = ConfigManager.read_yaml_config()
+    config_data['routes']['results'] = str(tmpdir)
+    gen = Generator(config_data=config_data)
+    gen.generate_files_call_count = 5
 
-    # Establecer un valor inicial
-    generator_instance.generate_files_call_count = 5
+    gen.save_cycle_number()
 
-    generator_instance.save_cycle_number()
-
-    # Verificar que se incrementó
-    assert generator_instance.generate_files_call_count == 6
-
-    # Verificar que se escribió el archivo con el valor correcto
-    mock_open.assert_called_with('/mocked/path/cycle_number.txt', 'w')
-    mock_file.write.assert_called_with('6')
+    assert gen.generate_files_call_count == 6
+    assert Path(tmpdir / '.cycle_number').read_text().strip() == '6'
 
 
-def test_create_output_directory(generator_instance):
-    # Test que verifica el formato correcto del directorio creado
+def test_create_output_directory(tmpdir):
+    config_data = ConfigManager.read_yaml_config()
+    config_data['routes']['devices'] = str(tmpdir)
+    gen = Generator(config_data=config_data)
+
     times_stamp = '20230101120000'
-    call_count = 999  # Usar un número único para evitar conflictos
+    call_count = 999
 
-    result = generator_instance.create_output_directory(times_stamp, call_count)
+    result = gen.create_output_directory(times_stamp, call_count)
 
-    # Verificar que el directorio fue creado
     assert os.path.exists(result)
 
-    # Verificar el formato correcto del directorio
     expected_format = f'cycle-{call_count}-{times_stamp}-noreport'
     assert expected_format in result
+    assert result == str(tmpdir / expected_format)
 
-    # Verificar que termina con la estructura esperada
-    assert result.endswith(f'results/devices/{expected_format}')
-
-    # Verificar que contiene la ruta relativa correcta
-    assert './../results/devices/' in result
-
-    # Limpiar el directorio creado
     os.rmdir(result)
 
 

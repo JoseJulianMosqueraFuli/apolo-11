@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import os
 import random
 import uuid
+from pathlib import Path
 from datetime import datetime
 
 from .config import ConfigManager
@@ -53,6 +54,10 @@ class Generator:
         self.mission_instance = Mission(config_data=config_data)
         self.device_instance = Device(config_data=config_data)
         self.generate_files_call_count: int = 0
+
+    @property
+    def _cycle_file_path(self) -> Path:
+        return Path(self._config['routes']['results']) / '.cycle_number'
 
     def generate_device_folder(self, base_path: str = './apolo_11/results') -> None:
         folder_path = os.path.join(base_path, 'devices')
@@ -107,25 +112,23 @@ class Generator:
             logger.info("Generación de archivos interrumpida por teclado.")
 
     def load_cycle_number(self):
+        path = self._cycle_file_path
         try:
-            with open(os.path.join(os.path.dirname(__file__), 'cycle_number.txt'), 'r') as file:
-                self.generate_files_call_count = int(file.read().strip())
-        except FileNotFoundError:
+            self.generate_files_call_count = int(path.read_text().strip())
+        except (FileNotFoundError, ValueError):
             self.generate_files_call_count = 0
             self.save_cycle_number()
 
     def save_cycle_number(self):
         self.generate_files_call_count += 1
-        with open(os.path.join(os.path.dirname(__file__), 'cycle_number.txt'), 'w') as file:
-            file.write(str(self.generate_files_call_count))
+        self._cycle_file_path.parent.mkdir(parents=True, exist_ok=True)
+        self._cycle_file_path.write_text(str(self.generate_files_call_count))
 
     def create_output_directory(self, times_stamp: str, generate_files_call_count: int) -> str:
-        current_directory: str = os.path.dirname(os.path.abspath(__file__))
-        output_directory: str = os.path.join(
-            current_directory,
-            f"./../results/devices/cycle-{generate_files_call_count}-{times_stamp}-noreport")
-        os.makedirs(output_directory, exist_ok=True)
-        return output_directory
+        name = f"cycle-{generate_files_call_count}-{times_stamp}-noreport"
+        output_directory = Path(self._config['routes']['devices']) / name
+        output_directory.mkdir(parents=True, exist_ok=True)
+        return str(output_directory)
 
     def generate_hash(self, *args: str | int) -> int:
         data: str = ''.join(map(str, args))

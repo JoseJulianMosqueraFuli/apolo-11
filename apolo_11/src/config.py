@@ -1,22 +1,14 @@
+from pathlib import Path
+
 import yaml
 
 
 class ConfigManager:
     @staticmethod
-    def read_yaml_config(config_path: str = 'apolo_11/config/config.yaml') -> dict:
-        """
-        Read YAML config from file
+    def read_yaml_config(config_path: str | None = None) -> dict:
+        if config_path is None:
+            config_path = str(Path(__file__).parent.parent / 'config/config.yaml')
 
-        Args:
-            config_path (str): path to YAML configuration file
-
-        Returns:
-            dict: dictionary representing YAML configuration
-
-        Raises:
-            ValueError: if the configuration file is empty
-            FileNotFoundError: if the configuration file does not exist
-        """
         with open(config_path, "r") as config_file:
             config_data = yaml.safe_load(config_file)
             if config_data is None:

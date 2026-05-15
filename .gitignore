@@ -10,7 +10,8 @@ __pycache__/
 # Folders configuration files
 .idea/
 
-apolo_11/src/cycle_number.txt
+# Cycle number state (now stored in results/)
+# apolo_11/src/cycle_number.txt
 
 # Hypothesis test database
 .hypothesis/
