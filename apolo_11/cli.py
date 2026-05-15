@@ -80,7 +80,7 @@ def main():
                         }
                         reporter_stats = {
                             'missions': reporter_instance.mission_stats(),
-                            'last_report_time': getattr(reporter_instance, 'last_report_time', None),
+                            'last_report_time': reporter_instance.last_report_time,
                         }
                         dashboard_instance.update_stats(generator_stats, reporter_stats)
                         dashboard_instance.update_display()

@@ -125,8 +125,8 @@ class Dashboard:
     def _render_mission_stats(self) -> Panel:
         """Render the mission statistics panel."""
         if not self.stats.missions:
-            empty_text = Text("No mission data available", style="italic yellow")
-            return Panel(Align.center(empty_text), title="Mission Statistics", border_style="red")
+            empty_text = Text("Waiting for first report cycle...", style="italic yellow")
+            return Panel(Align.center(empty_text), title="Mission Statistics", border_style="blue")
 
         table = Table(title="Mission Statistics", show_header=True, header_style="bold magenta")
         table.add_column("Mission", style="cyan", no_wrap=True)

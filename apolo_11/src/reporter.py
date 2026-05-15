@@ -15,6 +15,7 @@ class Reporter:
             config_data = ConfigManager.read_yaml_config()
         self._config = config_data
         self.devices_reports = defaultdict(list)
+        self.last_report_time: datetime | None = None
 
     def generate_report_folder(self, base_path: str | None = None) -> None:
         base_path = base_path or self._config['routes']['results']
@@ -31,6 +32,7 @@ class Reporter:
                         self.process_file(os.path.join(root, file))
 
             self.generate_stats_report()
+            self.last_report_time = datetime.now()
             self.move_folders_to_backup(input_directory, backup_directory)
 
         except Exception as e:
