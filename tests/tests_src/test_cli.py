@@ -69,12 +69,14 @@ class TestAsyncMain:
                                  'devices': {'types': [], 'status': []},
                                  'date_format': '%d%m%y%H%M%S',
                                  'routes': {'devices': '/tmp', 'backups': '/tmp', 'results': '/tmp'}}):
-            with patch('apolo_11.cli.setup_logging') as mock_logging:
+            with patch('apolo_11.cli.setup_logging') as mock_setup:
                 mock_logger = MagicMock()
-                mock_logging.return_value = mock_logger
+                mock_setup.return_value = mock_logger
                 from apolo_11.cli import _async_main
-                await _async_main()
-                mock_logger.error.assert_called_once()
+                with patch('apolo_11.cli.sys.argv', ['apolo', '--generator_interval', '5',
+                                                       '--reporter_interval', '3']):
+                    await _async_main()
+                    mock_logger.error.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_async_main_runs_tasks_and_stops(self):
