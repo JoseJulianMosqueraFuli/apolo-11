@@ -53,10 +53,13 @@ Then access:
 | ------------------------- | ------------- | -------------------------------------- |
 | `rabbitmq-service.yaml`   | Service       | Exposes RabbitMQ (5672 AMQP, 15672 UI) |
 | `rabbitmq-statefulset.yaml` | StatefulSet | RabbitMQ with persistent storage       |
+| `rabbitmq-secret.yaml`    | Secret        | RabbitMQ credentials (username/password) |
+| `rabbitmq-network-policy.yaml` | NetworkPolicy | Restricts ingress to RabbitMQ from apolo-11 only |
 | `apolo-configmap.yaml`    | ConfigMap     | Mission configuration YAML             |
 | `apolo-pvc.yaml`          | PVC           | 1Gi persistent volume for results      |
 | `apolo-deployment.yaml`   | Deployment    | apolo-11 with TUI + Web dashboard      |
 | `apolo-service.yaml`      | Service       | Exposes web dashboard (port 8000)      |
+| `apolo-pdb.yaml`          | PodDisruptionBudget | Limits voluntary disruptions to 0 |
 | `rabbitmq-ingress.yaml`   | Ingress       | Routes apolo.local and rabbitmq.local  |
 
 ## Architecture
