@@ -52,7 +52,7 @@ def test_property_invalid_config_keys_raise_keyerror(invalid_key):
     """
     Property 3: Claves de configuración inválidas lanzan KeyError
     Validates: Requirements 2.3
-    
+
     For any configuration key that does not exist in the loaded configuration,
     the Configurable class SHALL raise a KeyError exception.
     """

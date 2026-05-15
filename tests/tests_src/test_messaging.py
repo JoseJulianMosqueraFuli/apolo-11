@@ -1,8 +1,5 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-import json
-from unittest.mock import MagicMock
-import pytest
 from apolo_11.src.messaging import MessageBroker, QUEUE_GENERATED
 
 
@@ -92,7 +89,7 @@ class TestMessageBrokerEnabled:
             MagicMock(delivery_tag=1), None, b'{"cycle": 1}')
 
         broker = MessageBroker()
-        broker.consume(QUEUE_GENERATED, lambda x: 1/0)
+        broker.consume(QUEUE_GENERATED, lambda x: 1 / 0)
 
         mock_channel.basic_ack.assert_called_once()
 

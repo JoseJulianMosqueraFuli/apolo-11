@@ -12,10 +12,10 @@ import pytest
 def test_all_python_packages_have_init_files():
     """
     Property 18: Archivos __init__.py en paquetes
-    
+
     Para todos los directorios que contienen módulos Python (archivos .py),
     deben contener un archivo __init__.py para ser paquetes válidos.
-    
+
     Validates: Requirements 8.4
     """
     project_root = Path(__file__).parent.parent.parent
@@ -41,11 +41,11 @@ def test_all_python_packages_have_init_files():
 def test_configuration_files_in_root():
     """
     Property 20: Archivos de configuración en raíz
-    
+
     Para cualquier proyecto, los archivos de configuración (pyproject.toml,
     .pre-commit-config.yaml, pytest.ini, .gitignore) deben estar en el
     directorio raíz.
-    
+
     Validates: Requirements 8.5
     """
     project_root = Path(__file__).parent.parent.parent

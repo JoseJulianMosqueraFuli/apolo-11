@@ -161,7 +161,7 @@ def test_default_content_generate_string():
 def test_generate_files(mock_datetime, mock_generate_contentfile, mock_create_output_directory,
                         mock_save_cycle_number, mock_load_cycle_number, mock_open, mock_makedirs, generator_instance):
     """Test generate_files method with mocks to avoid real I/O
-    
+
     Requirements: 5.1 - Test con mocks para evitar I/O real, verificar creación de archivos
     """
     # Setup mocks

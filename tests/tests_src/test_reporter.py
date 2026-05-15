@@ -80,7 +80,7 @@ def test_move_folders_to_backup():
 
 def test_process_file():
     """Test process_file method with valid log file
-    
+
     Requirements: 5.2 - Test con archivo de log válido, verificar extracción de datos correcta
     """
     with TemporaryDirectory() as tmp_dir:
@@ -135,7 +135,7 @@ Hash: 12345"""
 @patch('apolo_11.src.reporter.datetime')
 def test_generate_stats_report(mock_datetime):
     """Test generate_stats_report method with test data
-    
+
     Requirements: 5.3 - Test con datos de prueba, verificar formato del reporte
     """
     with TemporaryDirectory() as tmp_dir:
@@ -188,7 +188,7 @@ def test_generate_stats_report(mock_datetime):
 
 def test_process_file_malformed_log():
     """Test process_file method with malformed log file
-    
+
     Requirements: 5.4 - Edge case: archivos malformados
     """
     with TemporaryDirectory() as tmp_dir:
@@ -214,7 +214,7 @@ Device Type Satellite"""
 
 def test_process_file_empty_log():
     """Test process_file method with empty log file
-    
+
     Requirements: 5.4 - Edge case: archivos vacíos
     """
     with TemporaryDirectory() as tmp_dir:
@@ -235,7 +235,7 @@ def test_process_file_empty_log():
 
 def test_process_files_empty_directory():
     """Test process_files method with empty directory
-    
+
     Requirements: 5.4 - Edge case: directorios vacíos
     """
     with TemporaryDirectory() as tmp_dir:
@@ -257,7 +257,7 @@ def test_process_files_empty_directory():
 
 def test_process_files_directory_with_non_log_files():
     """Test process_files method with directory containing non-log files
-    
+
     Requirements: 5.4 - Edge case: archivos que no son .log
     """
     with TemporaryDirectory() as tmp_dir:
@@ -284,7 +284,7 @@ def test_process_files_directory_with_non_log_files():
 
 def test_generate_stats_report_empty_data():
     """Test generate_stats_report method with no data
-    
+
     Requirements: 5.4 - Edge case: sin datos para procesar
     """
     with TemporaryDirectory() as tmp_dir:

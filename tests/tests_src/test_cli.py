@@ -74,7 +74,7 @@ class TestAsyncMain:
                 mock_setup.return_value = mock_logger
                 from apolo_11.cli import _async_main
                 with patch('sys.argv', ['apolo', '--generator_interval', '5',
-                                         '--reporter_interval', '3']):
+                                        '--reporter_interval', '3']):
                     await _async_main()
                     mock_logger.error.assert_called_once()
 
@@ -93,9 +93,9 @@ class TestAsyncMain:
                  patch('apolo_11.cli.Dashboard'):
                 from apolo_11.cli import _async_main
                 with patch('sys.argv', ['apolo', '--generator_interval', '3',
-                                         '--reporter_interval', '6',
-                                         '--num_files_min', '1',
-                                         '--num_files_max', '5']):
+                                        '--reporter_interval', '6',
+                                        '--num_files_min', '1',
+                                        '--num_files_max', '5']):
                     with pytest.raises(TimeoutError):
                         await asyncio.wait_for(_async_main(), timeout=0.5)
                     mock_gen.return_value.generate_device_folder.assert_called_once()

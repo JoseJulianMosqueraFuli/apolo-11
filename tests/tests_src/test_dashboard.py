@@ -67,7 +67,7 @@ class TestDashboard:
         Feature: apolo-11-improvements, Property 4: Dashboard muestra información completa
         Validates: Requirements 6.1, 6.2, 6.3
 
-        For any set of generator and reporter statistics, the dashboard render output 
+        For any set of generator and reporter statistics, the dashboard render output
         SHALL contain: files generated count, mission statistics, and last report status.
         """
         dashboard = Dashboard()
@@ -124,8 +124,9 @@ class TestDashboard:
         assert str(current_cycle) in layout_str
 
         # Property: Dashboard must show last report status (either timestamp or "N/A")
-        assert ("Last Report" in layout_str
-                and (datetime.now().strftime("%Y-%m-%d") in layout_str or "N/A" in layout_str))
+        assert "Last Report" in layout_str
+        has_timestamp = datetime.now().strftime("%Y-%m-%d") in layout_str
+        assert has_timestamp or "N/A" in layout_str
 
         # Property: Dashboard must show mission information when missions exist
         if missions:
