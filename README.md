@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Poetry](https://img.shields.io/badge/Poetry-dependency%20management-blue.svg)](https://python-poetry.org/)
 [![CI](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml/badge.svg)](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-48%20passing-green.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-77%20passing-green.svg)](tests/)
 [![Coverage](https://img.shields.io/badge/Coverage-98%25-brightgreen.svg)](htmlcov/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -75,6 +75,8 @@ Apollo 11 provides a complete suite of tools for space mission monitoring:
 
 ### Quick Start
 
+#### Local
+
 ```bash
 # 1. Clone the repository
 git clone git@github.com:JoseJulianMosqueraFuli/apolo-11.git
@@ -85,6 +87,13 @@ poetry install
 
 # 3. Run with dashboard (recommended)
 poetry run apolo --dashboard
+```
+
+#### Docker
+
+```bash
+# Build and run with RabbitMQ
+docker compose up --build
 ```
 
 ### Verify Installation
@@ -185,18 +194,23 @@ apolo-11/
 ├── 📁 apolo_11/
 │   ├── 📁 config/
 │   │   └── 📄 config.yaml      # System configuration
-│   └── 📁 src/
-│       ├── 📄 classes.py       # Mission and Device classes
-│       ├── 📄 config.py        # ConfigManager
-│       ├── 📄 dashboard.py     # TUI Dashboard with Rich
-│       ├── 📄 generator.py     # Log generator
-│       ├── 📄 logging_config.py # Centralized logging
-│       └── 📄 reporter.py      # Report processor
+│   ├── 📁 src/
+│   │   ├── 📄 classes.py       # Mission and Device classes
+│   │   ├── 📄 cli.py           # Async CLI entry point
+│   │   ├── 📄 config.py        # ConfigManager
+│   │   ├── 📄 dashboard.py     # TUI Dashboard with Rich
+│   │   ├── 📄 generator.py     # Log generator
+│   │   ├── 📄 logging_config.py # Centralized logging
+│   │   ├── 📄 messaging.py     # RabbitMQ message broker
+│   │   └── 📄 reporter.py      # Report processor
+│   └── 📁 results/             # Generated data (backups, reports)
 ├── 📁 tests/
-│   └── 📁 tests_src/           # Unit and property tests
+│   └── 📁 tests_src/           # Unit and property tests (65+)
 ├── 📁 docs/
 │   └── 📁 images/              # Diagrams and visual documentation
-├── 📄 main.py                  # Entry point (delegates to apolo_11.cli)
+├── 📄 main.py                  # Backward-compatible entry point
+├── 📄 Dockerfile               # Docker image build
+├── 📄 docker-compose.yml       # Multi-service orchestration
 └── 📄 pyproject.toml           # Project dependencies
 ```
 
@@ -206,7 +220,7 @@ The project maintains high code quality with comprehensive testing:
 
 ### Test Coverage
 
-- **✅ 48 Tests Passing**: All tests pass consistently
+- **✅ 77 Tests Passing**: All tests pass consistently
 - **📊 98% Coverage**: Excellent test coverage across all modules
 - **🔬 Property-Based Testing**: Using Hypothesis for robust validation
 - **🧪 Unit Testing**: Comprehensive unit tests for all components
@@ -294,6 +308,59 @@ routes:
 - **Concurrency**: No support for multiple simultaneous instances accessing the same log files
 - **Error Handling**: Basic error handling for malformed log files may need enhancement
 - **Resource Usage**: Large datasets may require additional memory optimization
+
+## 🐳 Docker
+
+### Standalone container
+
+```bash
+docker build -t apolo-11 .
+docker run --rm apolo-11 --dashboard
+```
+
+Mount a volume to persist results:
+
+```bash
+docker run --rm -v $(pwd)/results:/app/apolo_11/results apolo-11
+```
+
+### Docker Compose (with RabbitMQ)
+
+```bash
+docker compose up --build
+```
+
+Starts two services:
+
+| Service    | Image                    | Ports                  |
+| ---------- | ------------------------ | ---------------------- |
+| `rabbitmq` | `rabbitmq:3-management`  | `5672` (AMQP)          |
+|            |                          | `15672` (Management)   |
+| `apolo-11` | (built from `Dockerfile`) | —                     |
+
+The management UI is available at `http://localhost:15672` (guest/guest).
+
+### Environment Variables
+
+| Variable        | Default | Description                          |
+| --------------- | ------- | ------------------------------------ |
+| `RABBITMQ_HOST` | —       | RabbitMQ host. Unset = no messaging  |
+
+## 📨 Message Broker (RabbitMQ)
+
+When `RABBITMQ_HOST` is set, the generator publishes events to the `apolo.generated` topic exchange after each cycle:
+
+```json
+{
+  "cycle": 5,
+  "files_count": 50,
+  "num_files_min": 1,
+  "num_files_max": 10,
+  "timestamp": "2026-05-14 20:00:00"
+}
+```
+
+External consumers can subscribe to `apolo.generated` for real-time monitoring, dashboards, or archiving. The system works with full functionality when RabbitMQ is not available — messaging is optional and zero-overhead when disabled.
 
 ## 🚧 Recent Improvements
 

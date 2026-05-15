@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Poetry](https://img.shields.io/badge/Poetry-gestión%20de%20dependencias-blue.svg)](https://python-poetry.org/)
 [![CI](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml/badge.svg)](https://github.com/JoseJulianMosqueraFuli/apolo-11/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-48%20pasando-green.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-77%20pasando-green.svg)](tests/)
 [![Cobertura](https://img.shields.io/badge/Cobertura-98%25-brightgreen.svg)](htmlcov/)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](LICENSE)
 [![Rich](https://img.shields.io/badge/TUI-Rich%20Dashboard-purple.svg)](https://rich.readthedocs.io/)
