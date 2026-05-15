@@ -50,7 +50,6 @@ def _parse_args(config_data: dict) -> argparse.Namespace | None:
 async def _run_generator(gen: generator.Generator, rep: reporter.Reporter,
                          args: argparse.Namespace, dashboard: Dashboard | None,
                          stop: asyncio.Event):
-    logger = setup_logging()
     while not stop.is_set():
         await asyncio.to_thread(gen.generate_files, args.num_files_min, args.num_files_max)
 
@@ -72,7 +71,6 @@ async def _run_generator(gen: generator.Generator, rep: reporter.Reporter,
 async def _run_reporter(gen: generator.Generator, rep: reporter.Reporter,
                         args: argparse.Namespace, dashboard: Dashboard | None,
                         config_data: dict, stop: asyncio.Event):
-    logger = setup_logging()
     while not stop.is_set():
         try:
             await asyncio.wait_for(stop.wait(), timeout=args.reporter_interval)
@@ -88,7 +86,6 @@ async def _run_reporter(gen: generator.Generator, rep: reporter.Reporter,
         )
 
         if dashboard:
-            from datetime import datetime
             dashboard.update_stats(
                 {'files_count': gen.generate_files_call_count * args.num_files_max,
                  'cycle': gen.generate_files_call_count},
