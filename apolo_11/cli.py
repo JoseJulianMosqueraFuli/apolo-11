@@ -114,6 +114,20 @@ async def _run_reporter(gen: generator.Generator, rep: reporter.Reporter,
                 d.update_display()
 
 
+async def _run_mode(args, gen, rep, dashboards, config_data, stop, broker, live):
+    if args.mode == 'generator':
+        gen.generate_device_folder()
+        await _run_generator(gen, rep, args, dashboards, stop, broker)
+    elif args.mode == 'reporter':
+        await _run_reporter(gen, rep, args, dashboards, config_data, stop)
+    else:
+        gen.generate_device_folder()
+        await asyncio.gather(
+            _run_generator(gen, rep, args, dashboards, stop, broker),
+            _run_reporter(gen, rep, args, dashboards, config_data, stop),
+        )
+
+
 async def _async_main():
     logger = setup_logging()
     config_data = ConfigManager.read_yaml_config()
@@ -154,17 +168,7 @@ async def _async_main():
 
     try:
         with live if live else nullcontext():
-            if args.mode == 'generator':
-                gen.generate_device_folder()
-                await _run_generator(gen, rep, args, dashboards, stop, broker)
-            elif args.mode == 'reporter':
-                await _run_reporter(gen, rep, args, dashboards, config_data, stop)
-            else:
-                gen.generate_device_folder()
-                await asyncio.gather(
-                    _run_generator(gen, rep, args, dashboards, stop, broker),
-                    _run_reporter(gen, rep, args, dashboards, config_data, stop),
-                )
+            await _run_mode(args, gen, rep, dashboards, config_data, stop, broker, live)
     except KeyboardInterrupt:
         logger.info("Proceso interrumpido por el usuario.")
     finally:
