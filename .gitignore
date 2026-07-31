@@ -23,3 +23,8 @@ htmlcov/
 
 # Generated reports and results
 apolo_11/results/
+
+
+# Kubernetes secrets (never commit real credentials; use the .example templates)
+k8s/rabbitmq-secret.yaml
+k8s/grafana-secret.yaml

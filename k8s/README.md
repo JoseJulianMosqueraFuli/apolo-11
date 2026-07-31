@@ -3,11 +3,49 @@
 ## Quick Start
 
 ```bash
-# Deploy everything
+# 1. Create the required secrets (see "Secrets" below) BEFORE deploying
+kubectl create secret generic rabbitmq-auth \
+  --from-literal=username="apolo-$(openssl rand -hex 4)" \
+  --from-literal=password="$(openssl rand -base64 24)"
+
+kubectl create secret generic grafana-auth \
+  --from-literal=admin-user="admin" \
+  --from-literal=admin-password="$(openssl rand -base64 24)"
+
+# 2. Deploy everything
 kubectl apply -f k8s/
 
-# Check status
+# 3. Check status
 kubectl get pods -w
+```
+
+## Secrets
+
+Credentials are **not** committed to this repository. Two secrets must exist in
+the cluster before applying the manifests:
+
+| Secret         | Keys                          | Used by                        |
+| -------------- | ----------------------------- | ------------------------------ |
+| `rabbitmq-auth`| `username`, `password`        | RabbitMQ, generator, reporter  |
+| `grafana-auth` | `admin-user`, `admin-password`| Grafana                        |
+
+Create them with `kubectl create secret` (recommended, no credentials written to
+disk) as shown in the Quick Start, or copy the provided templates, set strong
+values and apply them:
+
+```bash
+cp k8s/rabbitmq-secret.yaml.example k8s/rabbitmq-secret.yaml
+cp k8s/grafana-secret.yaml.example k8s/grafana-secret.yaml
+# edit both files, replacing the CHANGE_ME placeholders with strong values
+kubectl apply -f k8s/rabbitmq-secret.yaml -f k8s/grafana-secret.yaml
+```
+
+The real `k8s/rabbitmq-secret.yaml` and `k8s/grafana-secret.yaml` files are
+git-ignored, and the `.example` templates are skipped by `kubectl apply -f k8s/`.
+Retrieve the values you set with, e.g.:
+
+```bash
+kubectl get secret grafana-auth -o jsonpath='{.data.admin-password}' | base64 -d
 ```
 
 ## Access
@@ -27,13 +65,15 @@ kubectl port-forward svc/prometheus 9090:9090
 ### Grafana
 ```bash
 kubectl port-forward svc/grafana 3000:3000
-# Open http://localhost:3000 (admin/admin)
+# Open http://localhost:3000
+# User/password come from the grafana-auth secret (see "Secrets")
 ```
 
 ### RabbitMQ Management
 ```bash
 kubectl port-forward svc/rabbitmq 15672:15672
-# Open http://localhost:15672 (guest/guest)
+# Open http://localhost:15672
+# User/password come from the rabbitmq-auth secret (see "Secrets")
 ```
 
 ### Logs
@@ -83,7 +123,8 @@ kubectl exec deploy/apolo-reporter -- ls /data/results
 | ------------------------- | ------------- | -------------------------------------- |
 | `rabbitmq-service.yaml`   | Service       | Exposes RabbitMQ (5672 AMQP, 15672 UI) |
 | `rabbitmq-statefulset.yaml` | StatefulSet | RabbitMQ with persistent storage       |
-| `rabbitmq-secret.yaml`    | Secret        | RabbitMQ credentials (username/password) |
+| `rabbitmq-secret.yaml.example` | Secret (template) | RabbitMQ credentials template (create the real secret out-of-band) |
+| `grafana-secret.yaml.example`  | Secret (template) | Grafana admin credentials template (create the real secret out-of-band) |
 | `rabbitmq-network-policy.yaml` | NetworkPolicy | Restricts ingress to RabbitMQ from generator/reporter |
 | `apolo-configmap.yaml`    | ConfigMap     | Mission configuration YAML             |
 | `apolo-pvc.yaml`          | PVC           | 1Gi persistent volume for results      |
