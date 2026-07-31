@@ -20,9 +20,17 @@ class MessageBroker:
         if not self._enabled:
             return
 
+        user = os.getenv("RABBITMQ_DEFAULT_USER", "")
+        password = os.getenv("RABBITMQ_DEFAULT_PASS", "")
+        credentials = (
+            pika.PlainCredentials(user, password)
+            if user and password
+            else pika.ConnectionParameters.DEFAULT_CREDENTIALS
+        )
+
         try:
             self._connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=host))
+                pika.ConnectionParameters(host=host, credentials=credentials))
             self._channel = self._connection.channel()
             self._channel.exchange_declare(exchange=EXCHANGE, exchange_type="topic")
             logger.info("Conectado a RabbitMQ en %s", host)

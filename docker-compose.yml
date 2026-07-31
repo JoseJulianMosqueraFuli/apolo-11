@@ -5,8 +5,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?RABBITMQ_USER must be set (see .env.example)}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:?RABBITMQ_PASS must be set (see .env.example)}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 5s
@@ -28,11 +28,19 @@ services:
         condition: service_healthy
     environment:
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?RABBITMQ_USER must be set (see .env.example)}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:?RABBITMQ_PASS must be set (see .env.example)}
     volumes:
       - ./apolo_11/results:/data/results
-    command: ["--mode", "generator", "--generator_interval", "3", "--reporter_interval", "10"]
+    command:
+      [
+        "--mode",
+        "generator",
+        "--generator_interval",
+        "3",
+        "--reporter_interval",
+        "10",
+      ]
     deploy:
       resources:
         limits:
@@ -49,13 +57,24 @@ services:
         condition: service_healthy
     environment:
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?RABBITMQ_USER must be set (see .env.example)}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:?RABBITMQ_PASS must be set (see .env.example)}
     volumes:
       - ./apolo_11/results:/data/results
     ports:
       - "8000:8000"
-    command: ["--mode", "reporter", "--api", "--api-port", "8000", "--generator_interval", "3", "--reporter_interval", "10"]
+    command:
+      [
+        "--mode",
+        "reporter",
+        "--api",
+        "--api-port",
+        "8000",
+        "--generator_interval",
+        "3",
+        "--reporter_interval",
+        "10",
+      ]
     deploy:
       resources:
         limits:
@@ -90,8 +109,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?GRAFANA_ADMIN_USER must be set (see .env.example)}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set (see .env.example)}
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
