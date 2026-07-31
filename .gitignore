@@ -23,3 +23,7 @@ htmlcov/
 
 # Generated reports and results
 apolo_11/results/
+
+# Local secrets / environment overrides
+.env
+_*
