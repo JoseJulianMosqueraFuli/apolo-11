@@ -1,10 +1,13 @@
-FROM python:3.12-slim
+# ---------- builder ----------
+# Poetry and its build-time dependencies (e.g. msgpack) live only in this stage
+# and never reach the final image.
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-RUN pip install poetry --quiet
-
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
+
+RUN pip install --no-cache-dir poetry
 
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-root --no-directory
@@ -14,9 +17,26 @@ COPY main.py README.md ./
 
 RUN poetry install --no-interaction
 
-RUN addgroup --system apolo && adduser --system --ingroup apolo apolo
+# Patch build tooling seeded into the venv (CVE-2025-47273 in setuptools)
+RUN /app/.venv/bin/pip install --no-cache-dir --upgrade "setuptools>=78.1.1"
 
-RUN mkdir -p /data/results && chown -R apolo:apolo /app /data/results
+# ---------- runtime ----------
+# Final image ships only the application and its runtime virtualenv — no Poetry,
+# no msgpack, and a patched setuptools.
+FROM python:3.12-slim AS runtime
+
+WORKDIR /app
+
+# Patch setuptools bundled in the base image as well (belt-and-suspenders)
+RUN pip install --no-cache-dir --upgrade "setuptools>=78.1.1" \
+    && rm -rf /root/.cache
+
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/apolo_11 /app/apolo_11
+COPY --from=builder /app/main.py /app/README.md ./
+
+RUN addgroup --system apolo && adduser --system --ingroup apolo apolo \
+    && mkdir -p /data/results && chown -R apolo:apolo /app /data/results
 
 USER apolo
 
