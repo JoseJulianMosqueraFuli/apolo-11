@@ -127,11 +127,11 @@ poetry run apolo --dashboard --generator_interval 3 --reporter_interval 10
 
 El sistema incluye un dashboard web moderno construido con **FastAPI**:
 
-| Endpoint          | Descripción                                         |
-| ----------------- | --------------------------------------------------- |
-| `GET /`           | Página HTML con auto-refresh (cada 3s)              |
-| `GET /api/stats`  | API JSON con estadísticas del sistema y misiones    |
-| `GET /docs`       | Swagger UI para explorar la API                     |
+| Endpoint         | Descripción                                      |
+| ---------------- | ------------------------------------------------ |
+| `GET /`          | Página HTML con auto-refresh (cada 3s)           |
+| `GET /api/stats` | API JSON con estadísticas del sistema y misiones |
+| `GET /docs`      | Swagger UI para explorar la API                  |
 
 ```bash
 # Habilitar el dashboard web
@@ -256,10 +256,40 @@ kubectl port-forward svc/apolo-11 8000:8000
 
 # RabbitMQ
 kubectl port-forward svc/rabbitmq 15672:15672
-# http://localhost:15672 (guest/guest)
+# http://localhost:15672 (usuario/clave definidos en el Secret rabbitmq-auth)
 ```
 
 Ver [`k8s/README.md`](k8s/README.md) para instrucciones detalladas.
+
+## 🐳 Docker Compose y credenciales
+
+Las credenciales **no** están hardcodeadas. Copia la plantilla y define valores fuertes antes de levantar el stack:
+
+```bash
+cp .env.example .env
+# edita .env: RABBITMQ_USER / RABBITMQ_PASS / GRAFANA_ADMIN_USER / GRAFANA_ADMIN_PASSWORD
+
+docker compose up --build   # funciona con Docker o con el dockerd de Rancher Desktop
+```
+
+> El `docker-compose.yml` **exige** estas variables (ya no hay valores por defecto
+> `guest/guest` ni `admin/admin`) y falla con un mensaje claro si falta `.env`.
+
+### Variables de entorno
+
+| Variable                | Descripción                                            |
+| ----------------------- | ------------------------------------------------------ |
+| `RABBITMQ_HOST`         | Host de RabbitMQ. Sin definir = mensajería desactivada |
+| `RABBITMQ_DEFAULT_USER` | Usuario con el que la app se conecta a RabbitMQ        |
+| `RABBITMQ_DEFAULT_PASS` | Contraseña con la que la app se conecta a RabbitMQ     |
+
+La app autentica contra RabbitMQ usando `pika.PlainCredentials`, por lo que ahora
+valida las credenciales de verdad en lugar de usar la cuenta anónima `guest`. En
+Kubernetes las credenciales se toman de los `Secret` (`rabbitmq-auth`, `grafana-admin`).
+
+> Los secretos siguen en texto plano en disco (`.env`, `Secret` con `stringData`). Para
+> producción usa un gestor externo (Vault, AWS Secrets Manager, External Secrets
+> Operator). El archivo `.env` está en `.gitignore` — nunca subas credenciales reales.
 
 ## Mejoras Recientes
 

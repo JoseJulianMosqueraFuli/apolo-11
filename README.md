@@ -195,11 +195,11 @@ The system includes a modern web dashboard built with **FastAPI** for browser-ba
 
 ### 🎛️ Endpoints
 
-| Endpoint          | Description                                      |
-| ----------------- | ------------------------------------------------ |
-| `GET /`           | HTML dashboard with auto-refresh (every 3s)      |
-| `GET /api/stats`  | JSON API with real-time system and mission stats |
-| `GET /docs`       | Swagger UI for API exploration                   |
+| Endpoint         | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| `GET /`          | HTML dashboard with auto-refresh (every 3s)      |
+| `GET /api/stats` | JSON API with real-time system and mission stats |
+| `GET /docs`      | Swagger UI for API exploration                   |
 
 </div>
 
@@ -319,40 +319,40 @@ The system is highly configurable through the `apolo_11/config/config.yaml` file
 ```yaml
 # Mission definitions
 missions:
-  codes:
-    OrbitOne: ORBONE
-    GalaxyTwo: GALXTWO
-  names:
-    - OrbitOne
-    - GalaxyTwo
+    codes:
+        OrbitOne: ORBONE
+        GalaxyTwo: GALXTWO
+    names:
+        - OrbitOne
+        - GalaxyTwo
 
 # Device specifications
 devices:
-  types:
-    - Satellite
-    - Rover
-  status:
-    - excellent
-    - good
-    - warning
+    types:
+        - Satellite
+        - Rover
+    status:
+        - excellent
+        - good
+        - warning
 
 # System settings
 general:
-  num_files_initial: 1
-  num_files_final: 100
-  time_cycle: 20
+    num_files_initial: 1
+    num_files_final: 100
+    time_cycle: 20
 
 # Logging configuration
 logging:
-  level: INFO
-  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level: INFO
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 # Directory paths
 routes:
-  results: ./apolo_11/results
-  devices: ./apolo_11/results/devices
-  backups: ./apolo_11/results/backups/
-  reports: ./apolo_11/results/reports/
+    results: ./apolo_11/results
+    devices: ./apolo_11/results/devices
+    backups: ./apolo_11/results/backups/
+    reports: ./apolo_11/results/reports/
 ```
 
 ### Customization
@@ -384,13 +384,13 @@ kubectl get pods -w
 
 ### Cluster Architecture
 
-| Resource              | Description                                    |
-| --------------------- | ---------------------------------------------- |
-| `rabbitmq`            | StatefulSet + Service (AMQP 5672, Mgmt 15672)  |
-| `apolo-11`            | Deployment with TUI + Web dashboard (port 8000) |
-| `apolo-config`        | ConfigMap mounted at `/app/apolo_11/config/`    |
-| `apolo-results`       | PVC for persistent mission data                 |
-| `apolo-ingress`       | Ingress for `apolo.local` and `rabbitmq.local`  |
+| Resource        | Description                                     |
+| --------------- | ----------------------------------------------- |
+| `rabbitmq`      | StatefulSet + Service (AMQP 5672, Mgmt 15672)   |
+| `apolo-11`      | Deployment with TUI + Web dashboard (port 8000) |
+| `apolo-config`  | ConfigMap mounted at `/app/apolo_11/config/`    |
+| `apolo-results` | PVC for persistent mission data                 |
+| `apolo-ingress` | Ingress for `apolo.local` and `rabbitmq.local`  |
 
 ### Access
 
@@ -401,7 +401,7 @@ kubectl port-forward svc/apolo-11 8000:8000
 
 # RabbitMQ management
 kubectl port-forward svc/rabbitmq 15672:15672
-# Open http://localhost:15672 (guest/guest)
+# Open http://localhost:15672 (credentials from the rabbitmq-auth Secret)
 
 # View logs
 kubectl logs -l app=apolo-11 -f
@@ -426,25 +426,47 @@ docker run --rm -v $(pwd)/results:/app/apolo_11/results -p 8000:8000 apolo-11 --
 
 ### Docker Compose (with RabbitMQ)
 
+Credentials are **not** hardcoded. Copy the template and set strong values first:
+
+```bash
+cp .env.example .env
+# edit .env and set RABBITMQ_USER / RABBITMQ_PASS / GRAFANA_ADMIN_USER / GRAFANA_ADMIN_PASSWORD
+```
+
+Then start the stack (works with Docker or Rancher Desktop's `dockerd`):
+
 ```bash
 docker compose up --build
 ```
 
-Starts two services:
+> The Compose file **requires** these variables to be set (there are no `guest/guest`
+> or `admin/admin` fallbacks). It fails fast with a clear message if `.env` is missing.
 
-| Service    | Image                    | Ports                  |
-| ---------- | ------------------------ | ---------------------- |
-| `rabbitmq` | `rabbitmq:3-management`  | `5672` (AMQP)          |
-|            |                          | `15672` (Management)   |
-| `apolo-11` | (built from `Dockerfile`) | —                     |
+Starts the following services:
 
-The management UI is available at `http://localhost:15672` (guest/guest).
+| Service      | Image                     | Ports                               |
+| ------------ | ------------------------- | ----------------------------------- |
+| `rabbitmq`   | `rabbitmq:3-management`   | `5672` (AMQP), `15672` (Management) |
+| `generator`  | (built from `Dockerfile`) | —                                   |
+| `reporter`   | (built from `Dockerfile`) | `8000` (Web API)                    |
+| `prometheus` | `prom/prometheus`         | `9090`                              |
+| `grafana`    | `grafana/grafana`         | `3000`                              |
+
+The RabbitMQ management UI is at `http://localhost:15672` and Grafana at
+`http://localhost:3000` — both use the credentials you set in `.env`.
 
 ### Environment Variables
 
-| Variable        | Default | Description                          |
-| --------------- | ------- | ------------------------------------ |
-| `RABBITMQ_HOST` | —       | RabbitMQ host. Unset = no messaging  |
+| Variable                | Default | Description                                  |
+| ----------------------- | ------- | -------------------------------------------- |
+| `RABBITMQ_HOST`         | —       | RabbitMQ host. Unset = messaging disabled    |
+| `RABBITMQ_DEFAULT_USER` | —       | RabbitMQ username used by the app to connect |
+| `RABBITMQ_DEFAULT_PASS` | —       | RabbitMQ password used by the app to connect |
+
+> The app authenticates to RabbitMQ with `RABBITMQ_DEFAULT_USER` / `RABBITMQ_DEFAULT_PASS`.
+> If they are unset, it falls back to pika's defaults; always set a dedicated user in any
+> shared or production environment. Compose additionally uses `RABBITMQ_USER` / `RABBITMQ_PASS`
+> and `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD` from `.env` (see `.env.example`).
 
 ## 📨 Message Broker (RabbitMQ)
 
@@ -452,11 +474,11 @@ When `RABBITMQ_HOST` is set, the generator publishes events to the `apolo.genera
 
 ```json
 {
-  "cycle": 5,
-  "files_count": 50,
-  "num_files_min": 1,
-  "num_files_max": 10,
-  "timestamp": "2026-05-14 20:00:00"
+    "cycle": 5,
+    "files_count": 50,
+    "num_files_min": 1,
+    "num_files_max": 10,
+    "timestamp": "2026-05-14 20:00:00"
 }
 ```
 
@@ -480,13 +502,21 @@ External consumers can subscribe to `apolo.generated` for real-time monitoring, 
 
 ## 🔒 Security
 
-See [`SECURITY.md`](SECURITY.md) for the planned security hardening roadmap, including:
+See [`SECURITY.md`](SECURITY.md) for the full security hardening roadmap. Highlights:
 
+- 🔑 **No default credentials**: removed the `guest/guest` (RabbitMQ) and `admin/admin`
+  (Grafana) fallbacks. Credentials are supplied via `.env` (Compose) or Kubernetes
+  `Secret`s (`k8s/rabbitmq-secret.yaml`, `k8s/grafana-secret.yaml`).
+- 🔐 **Enforced RabbitMQ auth**: the app connects with `pika.PlainCredentials`, so it
+  actually authenticates instead of silently using the anonymous `guest` account.
 - 🛡️ Running containers as non-root
-- 🔑 RabbitMQ credentials in Kubernetes Secrets
 - 📊 Resource limits and probes
 - 🔍 Container image vulnerability scanning
 - 🚧 Network policies and PodDisruptionBudget
+
+> Secrets are still stored in plaintext on disk (`.env`, `stringData` Secrets). For
+> production, use an external secrets manager (Vault, AWS Secrets Manager, External
+> Secrets Operator). `.env` is gitignored — never commit real credentials.
 
 Contributions to improve security are welcome!
 

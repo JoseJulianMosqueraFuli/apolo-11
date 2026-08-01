@@ -14,6 +14,18 @@ All identified security improvements for the Kubernetes deployment have been imp
 
 Credentials managed via `k8s/rabbitmq-secret.yaml` and referenced via `secretKeyRef` in both Deployment and StatefulSet.
 
+### 2b. No default credentials ✅
+
+The insecure `guest/guest` (RabbitMQ) and `admin/admin` (Grafana) fallbacks have been removed:
+
+- **Docker Compose** requires `RABBITMQ_USER`, `RABBITMQ_PASS`, `GRAFANA_ADMIN_USER`, and `GRAFANA_ADMIN_PASSWORD` via `${VAR:?...}`. It fails fast if they are not provided (see `.env.example`; real values live in a gitignored `.env`).
+- **Kubernetes** sources Grafana admin credentials from a `grafana-admin` Secret (`k8s/grafana-secret.yaml`) instead of hardcoded env values.
+- The `rabbitmq-secret.yaml` and `grafana-secret.yaml` files are templates with placeholder passwords and instructions to generate real ones out-of-band.
+
+### 2c. Enforced RabbitMQ authentication ✅
+
+`apolo_11/src/messaging.py` now connects with `pika.PlainCredentials(RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS)`. Previously the client passed no credentials, so pika silently authenticated as the anonymous `guest` account and the configured credentials were ignored. Verified end-to-end on Rancher (`dockerd`): the new user authenticates and connects, while `guest` and wrong passwords are rejected with `403 ACCESS_REFUSED`.
+
 ### 3. Resource limits ✅
 
 CPU/memory requests and limits on both `apolo-11` Deployment and `rabbitmq` StatefulSet.
@@ -54,22 +66,25 @@ Set to `Always` in both Deployment and StatefulSet to ensure fresh images in pro
 
 ## Priority Matrix
 
-| Item | Priority | Effort | Impact | Status |
-|------|----------|--------|--------|--------|
-| Non-root user | Critical | Low | High | ✅ Done |
-| RabbitMQ Secret | Critical | Low | High | ✅ Done |
-| Resource limits | Critical | Low | High | ✅ Done |
-| Probes | High | Low | High | ✅ Done |
-| Image scanning | High | Medium | Medium | ✅ Done |
-| NetworkPolicy | Medium | Medium | Medium | ✅ Done |
-| PodDisruptionBudget | Medium | Low | Medium | ✅ Done |
-| Seccomp | Medium | Medium | Medium | ✅ Done |
-| ImagePullPolicy | Low | Low | Low | ✅ Done |
-| HPA | Low | Medium | Low | ✅ Done |
+| Item                | Priority | Effort | Impact | Status  |
+| ------------------- | -------- | ------ | ------ | ------- |
+| Non-root user       | Critical | Low    | High   | ✅ Done |
+| RabbitMQ Secret     | Critical | Low    | High   | ✅ Done |
+| No default creds    | Critical | Low    | High   | ✅ Done |
+| Enforced RMQ auth   | Critical | Low    | High   | ✅ Done |
+| Resource limits     | Critical | Low    | High   | ✅ Done |
+| Probes              | High     | Low    | High   | ✅ Done |
+| Image scanning      | High     | Medium | Medium | ✅ Done |
+| NetworkPolicy       | Medium   | Medium | Medium | ✅ Done |
+| PodDisruptionBudget | Medium   | Low    | Medium | ✅ Done |
+| Seccomp             | Medium   | Medium | Medium | ✅ Done |
+| ImagePullPolicy     | Low      | Low    | Low    | ✅ Done |
+| HPA                 | Low      | Medium | Low    | ✅ Done |
 
 ## Docker Compose
 
 `docker-compose.yml` also updated with:
+
 - Resource limits via `deploy.resources`
 - Credentials via environment variables (`.env` file recommended)
 - Consistent volume mount paths with K8s (`/data/results`)
