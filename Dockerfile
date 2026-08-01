@@ -35,6 +35,13 @@ COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/apolo_11 /app/apolo_11
 COPY --from=builder /app/main.py /app/README.md ./
 
+# The application runs from the virtualenv and never invokes pip at runtime.
+# pip ships its own *vendored* copies of setuptools/msgpack under pip/_vendor,
+# which scanners flag even though they are unused. Removing pip eliminates that
+# vulnerable vendored code entirely and shrinks the attack surface.
+RUN rm -rf /usr/local/lib/python3.12/site-packages/pip* \
+           /app/.venv/lib/python3.12/site-packages/pip*
+
 RUN addgroup --system apolo && adduser --system --ingroup apolo apolo \
     && mkdir -p /data/results && chown -R apolo:apolo /app /data/results
 
