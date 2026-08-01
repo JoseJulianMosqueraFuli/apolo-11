@@ -86,12 +86,12 @@ Set to `Always` in both Deployment and StatefulSet to ensure fresh images in pro
 `docker-compose.yml` also updated with:
 
 - Resource limits via `deploy.resources`
-- Credentials via environment variables (`.env` file recommended)
+- **Required** credentials via `${VAR:?...}` (no `guest/guest` or `admin/admin` fallbacks); values loaded from a gitignored `.env` (template in `.env.example`)
 - Consistent volume mount paths with K8s (`/data/results`)
 
 ## Remaining Considerations
 
-- **Secret rotation**: The `rabbitmq-auth` Secret uses `stringData` with plaintext values. For production, use an external secrets manager (Vault, AWS Secrets Manager, etc.) or `externalSecrets` operator.
+- **Secret rotation**: The `rabbitmq-auth` and `grafana-admin` Secrets use `stringData` with plaintext values (templates only). For production, use an external secrets manager (Vault, AWS Secrets Manager, etc.) or the `externalSecrets` operator, and keep real values out of version control.
 - **TLS/Ingress**: The Ingress does not include TLS configuration. Add TLS termination with cert-manager for production.
 - **Audit logging**: Enable Kubernetes audit logging to track security-relevant events.
 - **Pod Security Standards**: Consider enforcing `restricted` Pod Security Standard at the namespace level.
