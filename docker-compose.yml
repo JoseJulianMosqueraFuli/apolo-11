@@ -1,12 +1,16 @@
 services:
   rabbitmq:
     image: rabbitmq:3-management
+    hostname: rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?RABBITMQ_USER must be set (see .env.example)}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:?RABBITMQ_PASS must be set (see .env.example)}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 5s
@@ -130,3 +134,4 @@ services:
 volumes:
   prometheus-data:
   grafana-data:
+  rabbitmq-data:
