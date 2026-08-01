@@ -63,6 +63,7 @@ jobs:
           push: false
           tags: apolo-11:ci
           load: true
+          no-cache: true
 
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@master
