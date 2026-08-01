@@ -27,3 +27,6 @@ apolo_11/results/
 # Local secrets / environment overrides
 .env
 _*
+
+#.Python
+*.pytest_cache
