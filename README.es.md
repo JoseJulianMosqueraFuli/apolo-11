@@ -240,12 +240,37 @@ El Dashboard TUI proporciona capacidades de monitoreo en tiempo real:
 
 ## ☸️ Kubernetes
 
-Despliegue en Docker Desktop o Kind:
+Despliegue en Docker Desktop o Kind.
+
+**1. Crea los Secrets de credenciales** (sin defaults — usa valores fuertes):
+
+```bash
+kubectl create secret generic rabbitmq-auth \
+  --from-literal=username=apolo \
+  --from-literal=password="$(openssl rand -base64 18)" \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+**2. Despliega todo:**
 
 ```bash
 kubectl apply -f k8s/
 kubectl get pods -w
 ```
+
+**Clúster local (Docker Desktop / Kind)** — usa la imagen local en vez de un registro:
+
+```bash
+docker build -t apolo-11:latest .          # Docker Desktop comparte su image store con el clúster
+kubectl patch deployment apolo-11 --type=json \
+  -p='[{"op":"replace","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"IfNotPresent"}]'
+# En Kind (containerd) en su lugar: kind load docker-image apolo-11:latest
+
+# Verifica que la app autenticó contra RabbitMQ vía el Secret
+kubectl logs deploy/apolo-11 --tail=-1 | grep -i "Conectado a RabbitMQ"
+```
+
+Para bajar todo: `kubectl delete -f k8s/ && kubectl delete pvc --all`.
 
 ### Acceso
 

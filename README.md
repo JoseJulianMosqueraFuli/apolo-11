@@ -372,15 +372,37 @@ routes:
 
 ## ☸️ Kubernetes
 
-Deploy to any Kubernetes cluster (tested on Docker Desktop & Kind):
+Deploy to any Kubernetes cluster (tested on Docker Desktop & Kind).
+
+**1. Create the credentials Secrets** (no defaults — use strong values):
 
 ```bash
-# Deploy everything
-kubectl apply -f k8s/
+kubectl create secret generic rabbitmq-auth \
+  --from-literal=username=apolo \
+  --from-literal=password="$(openssl rand -base64 18)" \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
 
-# Watch pods
+**2. Deploy everything:**
+
+```bash
+kubectl apply -f k8s/
 kubectl get pods -w
 ```
+
+**Local cluster (Docker Desktop / Kind)** — use the locally-built image instead of a registry:
+
+```bash
+docker build -t apolo-11:latest .          # Docker Desktop shares its image store with the cluster
+kubectl patch deployment apolo-11 --type=json \
+  -p='[{"op":"replace","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"IfNotPresent"}]'
+# On Kind (containerd) instead: kind load docker-image apolo-11:latest
+
+# Verify the app authenticated to RabbitMQ via the Secret
+kubectl logs deploy/apolo-11 --tail=-1 | grep -i "Conectado a RabbitMQ"
+```
+
+Tear down with `kubectl delete -f k8s/ && kubectl delete pvc --all`.
 
 ### Cluster Architecture
 
