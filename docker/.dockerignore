@@ -10,4 +10,10 @@ dist/
 *.egg-info/
 .gitignore
 .dockerignore
-Dockerfile
+docker/
+.mcacp/
+.kiro/
+docs/
+k8s/
+monitoring/
+tests/
